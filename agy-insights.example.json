@@ -1,0 +1,10 @@
+{
+  "conversationsDir": "",
+  "customKinds": {
+    "/Legacy/": "código legacy",
+    "\\.resx$": "recursos"
+  },
+  "crossSessionMin": 3,
+  "heavyOutputTokens": 2000,
+  "longSessionTokens": 100000
+}
