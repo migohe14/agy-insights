@@ -67,7 +67,7 @@ async function acmeHistory(dir) {
     { AbsolutePath: `${ACME}\\${rel}`, ...(s ? { StartLine: s, EndLine: e } : {}) }, size);
   const svc = 'src\\01-Core\\Domain\\Pedidos\\PedidosService.cs';
   await writeConversation(dir, '00000000-0000-4000-8000-000000000000', [
-    userStep('arregla el pedido'),
+    userStep('fix the order'),
     view(svc, 301, 380), view(svc, 301, 380),
     step('run_command', { CommandLine: 'dotnet test' }, 150000), step('run_command', { CommandLine: 'dotnet test' }, 150000),
     view('src\\03-Infra\\obj\\Debug\\net8.0\\Infra.AssemblyInfo.g.cs', 0, 0, 30000),
@@ -75,15 +75,15 @@ async function acmeHistory(dir) {
     ...Array.from({ length: 30 }, (_, i) => view(`src\\02-App\\Handlers\\Handler${i % 6}.cs`, i * 10, i * 10 + 60, 6000)),
   ], 'Gemini 4 Argon (High)');
   await writeConversation(dir, '00000001-0000-4000-8000-000000000000', [
-    userStep('revisa la migración'),
+    userStep('check the migration'),
     view(svc, 1, 80), view('src\\04-Data\\Migrations\\20250101_Init.cs', 0, 0, 60000),
     step('grep_search', { SearchPath: ACME, Query: 'Pedido' }, 3000),
   ]);
   await writeConversation(dir, '00000002-0000-4000-8000-000000000000', [
-    userStep('compila'), view(svc, 301, 380), step('run_command', { CommandLine: 'dotnet build' }, 40000),
+    userStep('build it'), view(svc, 301, 380), step('run_command', { CommandLine: 'dotnet build' }, 40000),
   ]);
   await writeConversation(dir, '00000003-0000-4000-8000-000000000000', [
-    userStep('lee el readme'), step('view_file', { AbsolutePath: 'C:\\dev\\Inventario\\README.md' }, 2000),
+    userStep('read the readme'), step('view_file', { AbsolutePath: 'C:\\dev\\Inventario\\README.md' }, 2000),
   ]);
 }
 

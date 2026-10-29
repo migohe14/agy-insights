@@ -1,7 +1,7 @@
 {
   "name": "agy-insights",
-  "version": "0.3.1",
-  "description": "Mide el consumo de tokens de Antigravity CLI y muestra qué contexto se envía de forma repetida o innecesaria. Uso: npx agy-insights",
+  "version": "0.4.0",
+  "description": "Measures Antigravity CLI token usage and shows which context is sent repeatedly or needlessly, in English or Spanish. Run: npx agy-insights",
   "license": "MIT",
   "keywords": [
     "antigravity",
@@ -9,7 +9,10 @@
     "gemini",
     "tokens",
     "context",
-    "cli"
+    "cli",
+    "token-usage",
+    "optimization",
+    "i18n"
   ],
   "bin": {
     "agy-insights": "agy-insights.js"
@@ -19,7 +22,8 @@
     "lib/",
     "vendor/",
     "agy-insights.example.json",
-    "docs/"
+    "docs/",
+    "README.es.md"
   ],
   "engines": {
     "node": ">=20"

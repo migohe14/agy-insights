@@ -10,29 +10,14 @@ const { analyze, DEFAULT_DIR } = require('./lib/history');
 const { findings, DEFAULTS } = require('./lib/findings');
 const report = require('./lib/report');
 const { buildMap } = require('./lib/map');
-
-const HELP = `Uso: agy-insights [opciones]   (o npx …, o node agy-insights.js)
-
-Analiza tu historial de Antigravity CLI y abre un informe en el navegador.
-
-Opciones:
-  --project <carpeta>   Solo conversaciones que tocaron ese proyecto ("." = carpeta actual)
-  --text                Resumen en la terminal en vez del informe HTML
-  --paths               Con --text, muestra rutas y las exclusiones propuestas
-  --map                 Imprime un mapa del proyecto (--project, o la carpeta actual) para AGENTS.md
-  --out <fichero>       Dónde guardar el informe HTML (por defecto, en la carpeta temporal)
-  --no-open             No abrir el navegador
-  --dir <carpeta>       Otra carpeta de historial (por defecto ${DEFAULT_DIR})
-  --config <fichero>    Configuración (por defecto ~/.agy-insights.json si existe)
-  --help                Esta ayuda
-`;
+const { t, setLang, detect } = require('./lib/i18n');
 
 function parseArgs(argv) {
   const opts = { open: true };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const value = () => {
-      if (i + 1 >= argv.length) fail(`Falta el valor de ${a}`);
+      if (i + 1 >= argv.length) fail(t.missingValue(a));
       return argv[++i];
     };
     if (a === '--help' || a === '-h') opts.help = true;
@@ -44,7 +29,8 @@ function parseArgs(argv) {
     else if (a === '--no-open') opts.open = false;
     else if (a === '--dir') opts.dir = path.resolve(value());
     else if (a === '--config') opts.config = path.resolve(value());
-    else fail(`Opción desconocida: ${a}. Usa --help.`);
+    else if (a === '--lang') opts.lang = value();
+    else fail(t.unknownOption(a));
   }
   return opts;
 }
@@ -60,13 +46,13 @@ function fail(msg) {
 function loadConfig(file) {
   const target = file || path.join(os.homedir(), '.agy-insights.json');
   if (!fs.existsSync(target)) {
-    if (file) fail(`No existe el fichero de configuración ${file}`);
+    if (file) fail(t.configNotFound(file));
     return {};
   }
   try {
     return JSON.parse(fs.readFileSync(target, 'utf8'));
   } catch (e) {
-    return fail(`No se puede leer ${target}: ${e.message}`);
+    return fail(t.cannotRead(target, e.message));
   }
 }
 
@@ -80,9 +66,14 @@ function openInBrowser(file) {
 }
 
 async function main() {
-  const opts = parseArgs(process.argv.slice(2));
-  if (opts.help) return console.log(HELP);
+  const argv = process.argv.slice(2);
+  // Language first, so that option errors are already in it.
+  if (!(argv.includes('--lang') && setLang(argv[argv.indexOf('--lang') + 1]))) setLang(detect());
+  const opts = parseArgs(argv);
+  if (opts.lang && !setLang(opts.lang)) fail(t.badLang(opts.lang));
+  if (opts.help) return console.log(t.help(DEFAULT_DIR));
   const cfg = loadConfig(opts.config);
+  if (!opts.lang && cfg.lang && !setLang(cfg.lang)) fail(t.badLang(cfg.lang));
 
   if (opts.map) opts.project = opts.project || process.cwd();
   const r = await analyze({
@@ -93,7 +84,7 @@ async function main() {
   if (opts.map) {
     const m = buildMap(opts.project, { ...cfg.map, history: r.files });
     console.log(m.block);
-    return console.error(`\n~${m.tokens} tokens en cada petición. Pégalo en ${path.join(opts.project, 'AGENTS.md')} si te convence; agy-insights no lo escribe.`);
+    return console.error(t.mapDone(m.tokens, path.join(opts.project, 'AGENTS.md')));
   }
   const found = findings(r, {
     crossSessionMin: cfg.crossSessionMin ?? DEFAULTS.crossSessionMin,
@@ -104,10 +95,10 @@ async function main() {
   if (opts.text) return process.stdout.write(report.text(r, found, { scope: opts.project, paths: opts.paths }));
 
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
-  const out = opts.out || path.join(os.tmpdir(), 'agy-insights', `informe-${stamp}.html`);
+  const out = opts.out || path.join(os.tmpdir(), 'agy-insights', `${t.reportName}-${stamp}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, report.html(r, found, { scope: opts.project }));
-  console.log(`${r.conversations} conversaciones analizadas, ${found.length} hallazgos.\nInforme: ${out}`);
+  console.log(t.done(r.conversations, found.length, out));
   if (opts.open) openInBrowser(out);
 }
 

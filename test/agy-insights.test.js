@@ -9,6 +9,7 @@ const { analyze } = require('../lib/history');
 const { findings } = require('../lib/findings');
 const report = require('../lib/report');
 const { buildMap, START, END } = require('../lib/map');
+const i18n = require('../lib/i18n');
 const { step, userStep, writeConversation, writeTranscript, acmeHistory, ACME } = require('./fake-history');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-insights-test-'));
@@ -16,7 +17,7 @@ const history = path.join(tmp, 'history');
 const hashes = (dir) => fs.readdirSync(dir).sort().map((f) => crypto.createHash('sha1').update(fs.readFileSync(path.join(dir, f))).digest('hex'));
 const byId = (found, id) => found.find((f) => f.id === id);
 
-before(() => acmeHistory(history));
+before(() => { i18n.setLang('en'); return acmeHistory(history); });
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));
 
 test('reads every conversation, or only the ones of a project', async () => {
@@ -52,7 +53,7 @@ test('never proposes excluding source code, even if it is read in many sessions'
 test('counts a call once although agy stores it in two steps', async () => {
   const dir = path.join(tmp, 'history-once');
   await writeConversation(dir, '0000000c-0000-4000-8000-000000000000', [
-    userStep('lee el servicio'), step('view_file', { AbsolutePath: `${ACME}\\src\\Servicio.cs` }, 5000),
+    userStep('read the service'), step('view_file', { AbsolutePath: `${ACME}\\src\\Servicio.cs` }, 5000),
   ]);
   const r = await analyze({ dir });
   assert.equal(r.reads, 1);
@@ -71,9 +72,9 @@ test('adds up the real usage from the transcripts, subagents included, and ranks
   assert.equal(r.sessions[0].id, sub);
   assert.equal(r.sessions.find((s) => s.id === old).usage, null);
   const out = report.text(r, findings(r), {});
-  assert.match(out, /Consumo real: 69\.300 tokens .* 282\.900 contando la caché, en 4 llamadas/);
-  assert.match(out, /1 conversaciones sin registro/);
-  assert.match(report.html(r, findings(r), {}), /Sesiones \(consumo real\)/);
+  assert.match(out, /Real usage: 69,300 tokens .* 282,900 including cache, in 4 model calls/);
+  assert.match(out, /1 conversations without a log/);
+  assert.match(report.html(r, findings(r), {}), /Sessions \(real usage\)/);
 });
 
 test('leaves the history untouched', async () => {
@@ -88,7 +89,7 @@ test('finds the project of a file through its .git folder, and does not write in
   fs.mkdirSync(path.join(project, 'dist'), { recursive: true });
   const dir = path.join(tmp, 'history-git');
   await writeConversation(dir, '00000009-0000-4000-8000-000000000000', [
-    userStep('mira el bundle'),
+    userStep('look at the bundle'),
     step('view_file', { AbsolutePath: path.join(project, 'dist', 'bundle.js') }, 40000),
   ]);
   const r = await analyze({ dir });
@@ -121,26 +122,63 @@ test('escapes paths in the HTML report', async () => {
 test('builds a short project map with large files and generated folders, without writing', () => {
   const project = path.join(tmp, 'Mapa');
   const write = (rel, text) => { fs.mkdirSync(path.dirname(path.join(project, rel)), { recursive: true }); fs.writeFileSync(path.join(project, rel), text); };
-  write('src/Core/Pedidos/Servicio.cs', 'x\n'.repeat(900));
-  write('src/Core/Facturas/Factura.cs', 'x\n'.repeat(10));
+  write('src/Core/Orders/Service.cs', 'x\n'.repeat(900));
+  write('src/Core/Invoices/Invoice.cs', 'x\n'.repeat(10));
   write('src/App/Handler.cs', 'x\n');
   write('src/Infra/obj/Debug/Gen.g.cs', 'x\n'.repeat(5000));
   write('src/Data/Migrations/Init.cs', 'x\n'.repeat(3000));
   const before = fs.readdirSync(project).sort();
   const m = buildMap(project);
-  assert.match(m.text, /- src\/Core\/: Facturas, Pedidos \(2 ficheros\)/);
-  assert.match(m.text, /- src\/Core\/Pedidos\/Servicio\.cs \(~900 líneas\)/);
+  assert.match(m.text, /- src\/Core\/: Invoices, Orders \(2 files\)/);
+  assert.match(m.text, /- src\/Core\/Orders\/Service\.cs \(~900 lines\)/);
   assert.ok(!m.text.includes('Gen.g.cs') && !m.text.includes('Init.cs'));
-  assert.match(m.text, /No leas .*src\/Data\/Migrations\/.*src\/Infra\/obj\//);
+  assert.match(m.text, /Don't read .*src\/Data\/Migrations\/.*src\/Infra\/obj\//);
   assert.ok(m.block.startsWith(START) && m.block.endsWith(END));
   assert.deepEqual(fs.readdirSync(project).sort(), before);
 });
 
 test('the command prints a text report and changes nothing', () => {
   const before = hashes(history);
-  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', history, '--text', '--paths'], { encoding: 'utf8' });
+  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', history, '--text', '--paths', '--lang', 'en'], { encoding: 'utf8' });
+  assert.equal(res.status, 0, res.stderr);
+  assert.match(res.stdout, /4 conversations/);
+  assert.match(res.stdout, /Deny reading it/);
+  assert.deepEqual(hashes(history), before);
+});
+
+test('speaks Spanish with --lang es, numbers included', async () => {
+  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', history, '--text', '--paths', '--lang', 'es'], { encoding: 'utf8' });
   assert.equal(res.status, 0, res.stderr);
   assert.match(res.stdout, /4 conversaciones/);
   assert.match(res.stdout, /Denegar la lectura/);
-  assert.deepEqual(hashes(history), before);
+  assert.match(res.stdout, /código generado \/ migraciones/);
+  assert.match(res.stdout, /~\d{1,3}\.\d{3}/);
+  i18n.setLang('es');
+  try {
+    const r = await analyze({ dir: history, workspaces: [ACME] });
+    const html = report.html(r, findings(r), {});
+    assert.match(html, /<html lang="es">/);
+    assert.match(html, /Qué está pasando/);
+  } finally {
+    i18n.setLang('en');
+  }
+});
+
+test('picks the language from the system locale, English by default', () => {
+  assert.equal(i18n.detect({ LANG: 'es_ES.UTF-8' }), 'es');
+  assert.equal(i18n.detect({ LC_ALL: 'es-MX' }), 'es');
+  assert.equal(i18n.detect({ LANG: 'en_US.UTF-8' }), 'en');
+  assert.equal(i18n.detect({ LANG: 'fr_FR' }), 'en');
+  assert.equal(i18n.setLang('fr'), false);
+});
+
+test('rejects an unsupported language', () => {
+  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--lang', 'fr', '--help'], { encoding: 'utf8', env: { ...process.env, LANG: 'en_US' } });
+  assert.equal(res.status, 1);
+  assert.match(res.stderr, /Unsupported language: fr/);
+});
+
+test('both languages define the same messages', () => {
+  const keys = (o, p = '') => Object.entries(o).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? keys(v, `${p}${k}.`) : [`${p}${k}`])).sort();
+  assert.deepEqual(keys(i18n.LANGS.es), keys(i18n.LANGS.en));
 });
