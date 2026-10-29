@@ -304,3 +304,34 @@ test("never reports Antigravity's own brain or skills as generated files", async
   assert.equal(byId(findings(r), 'non-source'), undefined);
   assert.match(report.text(r, findings(r), {}), /Antigravity's own files \(brain, skills\)/);
 });
+
+test('a build/ or bin/ folder kept in git is source code, not build output', async () => {
+  const project = path.join(tmp, 'webfront');
+  const write = (rel, text) => { fs.mkdirSync(path.dirname(path.join(project, rel)), { recursive: true }); fs.writeFileSync(path.join(project, rel), text); };
+  write('build/webpack/webpack.config.js', 'module.exports = {};\n');
+  write('bin/cli.js', 'console.log(1);\n');
+  write('dist/bundle.js', 'x'.repeat(5000));
+  write('.gitignore', 'dist/\n');
+  const git = (...args) => spawnSync('git', args, { cwd: project, encoding: 'utf8' });
+  git('init', '-q');
+  git('add', '-A');
+  git('-c', 'user.name=t', '-c', 'user.email=t@example.com', 'commit', '-qm', 'init');
+
+  const dir = path.join(tmp, 'history-webfront');
+  await writeConversation(dir, '00000050-0000-4000-8000-000000000000', [
+    userStep('x'),
+    step('view_file', { AbsolutePath: path.join(project, 'build', 'webpack', 'webpack.config.js') }, 20000),
+    step('view_file', { AbsolutePath: path.join(project, 'bin', 'cli.js') }, 20000),
+    step('view_file', { AbsolutePath: path.join(project, 'dist', 'bundle.js') }, 20000),
+  ]);
+  const r = await analyze({ dir });
+  const kindOf = (rel) => r.files.find((f) => f.rel === rel).kind;
+  assert.equal(kindOf('build/webpack/webpack.config.js'), 'code .js');
+  assert.equal(kindOf('bin/cli.js'), 'code .js');
+  assert.equal(kindOf('dist/bundle.js'), 'build');
+  assert.deepEqual(byId(findings(r), 'non-source').items.map((i) => i.label).filter((l) => !l.includes('"')), ['webfront › dist/']);
+
+  const m = buildMap(project);
+  assert.doesNotMatch(m.text, /Don't read.*build\//);
+  assert.match(m.text, /- build\/: webpack/);
+});

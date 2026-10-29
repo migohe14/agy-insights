@@ -87,7 +87,7 @@ Arriba están el selector de periodo y los totales. Después, una gráfica de **
 | Hallazgo | Qué significa | Qué hacer |
 |---|---|---|
 | El agente vuelve a leer lo que ya tenía | Lee otra vez un trozo de fichero que ya estaba en la conversación | Sesiones más cortas, una por tarea, o `/compact`. No excluyas el fichero: lo necesita. |
-| Ficheros generados, compilados o de dependencias | Lecturas de `bin/`, `obj/`, `dist/`, `node_modules`, migraciones, lockfiles o logs (los ficheros propios de Antigravity en `~/.gemini`, como su brain, nunca cuentan) | Si no hacían falta, exclúyelos (ver abajo) |
+| Ficheros generados, compilados o de dependencias | Lecturas de `bin/`, `obj/`, `dist/`, `node_modules`, migraciones, lockfiles o logs (nunca cuentan los ficheros propios de Antigravity en `~/.gemini`, como su brain, ni una carpeta `build/` o `bin/` que git mantiene en el repo, como una configuración de webpack) | Si no hacían falta, exclúyelos (ver abajo) |
 | Los mismos ficheros entran en muchas sesiones | Un fichero se lee en varias conversaciones distintas | Si es código central es normal; si es grande, dile al agente qué parte mirar |
 | Comandos con salidas muy largas | La salida de tests o builds entra entera | Pide ejecutar solo el test o proyecto afectado |
 | Sesiones muy largas | Todo lo acumulado se reenvía en cada turno | Una conversación nueva por tarea |
