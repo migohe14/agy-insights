@@ -86,14 +86,15 @@ function sinceTime({ since, days }) {
 // Tab-separated table of where each conversation's call models came from, for bug reports.
 function debugModels(r) {
   const d = t.debugModels;
-  const sum = { rows: 0, rowsWithModel: 0, calls: 0, fromTranscript: 0, unknown: 0 };
+  const sum = { rows: 0, rowsWithModel: 0, calls: 0, fromTranscript: 0, unknown: 0, unmetered: 0 };
   const lines = [d.header.join('\t')];
   for (const s of r.sessions) {
     const m = s.modelSources;
     for (const k of Object.keys(sum)) sum[k] += m[k];
-    lines.push([s.id.slice(0, 8), m.calls, m.rows, m.rowsWithModel, m.fromTranscript, m.unknown, s.model ? `${s.model.model} (${s.model.effort})` : '', m.unknown ? m.candidates.join(' | ') : ''].join('\t'));
+    lines.push([s.id.slice(0, 8), m.calls, m.rows, m.rowsWithModel, m.fromTranscript, m.unknown, s.model ? `${s.model.model} (${s.model.effort})` : '', m.unknown ? m.candidates.join(' | ') : '',
+      m.unmetered || '', m.unmetered ? m.unmeteredKeys.join(' ') : ''].join('\t'));
   }
-  lines.push([d.total, sum.calls, sum.rows, sum.rowsWithModel, sum.fromTranscript, sum.unknown, '', ''].join('\t'), '', d.note, '');
+  lines.push([d.total, sum.calls, sum.rows, sum.rowsWithModel, sum.fromTranscript, sum.unknown, '', '', sum.unmetered || '', ''].join('\t'), '', d.note, '');
   return lines.join('\n');
 }
 

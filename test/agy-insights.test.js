@@ -265,6 +265,30 @@ test('the command writes a report with the period presets', () => {
   assert.ok(!page.includes('Últimos 7 días'));
 });
 
+test('calls logged without token counts are not counted as 0 tokens', async () => {
+  const dir = path.join(tmp, 'unmetered', 'conversations');
+  const a = '00000040-0000-4000-8000-000000000000', b = '00000041-0000-4000-8000-000000000000';
+  await writeConversation(dir, a, [userStep('x')], ['Gemini 3.8 Flash (High)', 'Gemini 3.8 Flash (High)']);
+  writeTranscript(dir, a, [[100000, 50000, 2000], [100000, 50000, 2000]]);
+  // As seen with the VS Code plugin: model calls in the log, but no token fields.
+  await writeConversation(dir, b, [userStep('x')], Array(3).fill('Gemini 3.8 Flash (High)'));
+  const logs = path.join(dir, '..', 'brain', b, '.system_generated', 'logs');
+  fs.mkdirSync(logs, { recursive: true });
+  fs.writeFileSync(path.join(logs, 'transcript.jsonl'), Array(3).fill(JSON.stringify({ type: 'PLANNER_RESPONSE', created_at: new Date().toISOString(), content: 'x' })).join('\n'));
+
+  const r = await analyze({ dir });
+  assert.deepEqual([r.usage.conversations, r.usage.calls], [1, 2]);
+  assert.equal(r.sessions.find((s) => s.id === b).usage, null);
+  assert.deepEqual(r.sessions.find((s) => s.id === b).modelSources.unmeteredKeys, ['content', 'created_at', 'type']);
+  // Per call averages only the 2 calls with counts: 102,000, not 204,000 / 5.
+  const m = r.models[0];
+  assert.deepEqual([m.calls, m.known, (m.input + m.output) / m.known], [5, 2, 102000]);
+  assert.deepEqual(r.daily.map((d) => d.calls), [2]);
+  // The long-sessions header shows the real figure, as a share of real usage.
+  const page = report.html(r, findings(r), {});
+  assert.match(page, /Very long sessions <span class="tok">204,000 tokens · 100%<\/span>/);
+});
+
 test('reports the model and effort level of each call, with its real tokens', async () => {
   const dir = path.join(tmp, 'models', 'conversations');
   const a = '00000030-0000-4000-8000-000000000000', b = '00000031-0000-4000-8000-000000000000';
@@ -391,7 +415,7 @@ test('takes the model from the transcript when gen_metadata does not match the c
   assert.equal(by('Gemini 3.8 Flash').input, 300);
   assert.equal(by('Gemini 4 Argon').input, 3000);
   assert.equal(r.models.length, 2);
-  assert.deepEqual(r.sessions[0].modelSources, { rows: 2, rowsWithModel: 2, calls: 4, fromTranscript: 4, unknown: 0, candidates: [] });
+  assert.deepEqual(r.sessions[0].modelSources, { rows: 2, rowsWithModel: 2, calls: 4, fromTranscript: 4, unknown: 0, unmetered: 0, unmeteredKeys: [], candidates: [] });
 });
 
 test('--debug-models lists unrecognized model ids, and only short id-like strings', async () => {
@@ -409,7 +433,7 @@ test('--debug-models lists unrecognized model ids, and only short id-like string
   const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', dir, '--debug-models', '--lang', 'en'], { encoding: 'utf8' });
   assert.equal(res.status, 0, res.stderr);
   const row = res.stdout.split('\n').find((l) => l.startsWith('00000072'));
-  assert.equal(row, '00000072\t2\t2\t0\t0\t2\t\tNova Ultra 2 | MODEL_PLACEHOLDER_M26');
+  assert.equal(row, '00000072\t2\t2\t0\t0\t2\t\tNova Ultra 2 | MODEL_PLACEHOLDER_M26\t\t');
   assert.doesNotMatch(res.stdout, /secret|helpful/);
 });
 
