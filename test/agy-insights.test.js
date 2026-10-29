@@ -242,7 +242,13 @@ test('the HTML report charts real usage per day and switches between periods', a
     { key: 'all', label: 'All history', r, found: findings(r) },
     { key: 'd7', label: 'Last 7 days', r: week, found: findings(week) },
   ], {});
-  assert.equal((page.match(/class="col"/g) || []).length, 3 + 2);
+  // Each period draws its columns twice: total and per call.
+  assert.equal((page.match(/class="col"/g) || []).length, 2 * (3 + 2));
+  assert.match(page, /<button type="button" data-mode="call" aria-pressed="false">Per call<\/button>/);
+  // Per call does not follow volume: 3 calls of 1010, 2010 and 3010 tokens on separate days.
+  assert.match(page, /data-v="3,010 tokens per call"/);
+  // Days in between have no calls: "No activity", not "0 tokens".
+  assert.match(page, /data-v="No activity" data-c="" data-n=""/);
   assert.match(page, /<button type="button" data-view="d7" aria-pressed="false">Last 7 days<\/button>/);
   assert.match(page, /<div class="view" data-view="d7" hidden>/);
   assert.match(page, /Token usage per day/);
@@ -255,7 +261,8 @@ test('the command writes a report with the period presets', () => {
   const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', history, '--out', out, '--no-open', '--lang', 'es'], { encoding: 'utf8' });
   assert.equal(res.status, 0, res.stderr);
   const page = fs.readFileSync(out, 'utf8');
-  for (const label of ['Todo el historial', 'Últimos 90 días', 'Últimos 30 días', 'Últimos 7 días']) assert.ok(page.includes(`>${label}</button>`), label);
+  for (const label of ['Todo el historial', 'Últimos 90 días', 'Últimos 30 días', 'Esta semana']) assert.ok(page.includes(`>${label}</button>`), label);
+  assert.ok(!page.includes('Últimos 7 días'));
 });
 
 test('reports the model and effort level of each call, with its real tokens', async () => {

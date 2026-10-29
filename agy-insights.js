@@ -98,7 +98,15 @@ function debugModels(r) {
 }
 
 // Periods the HTML report can switch to, besides the whole history.
-const PRESET_DAYS = [90, 30, 7];
+const PRESET_DAYS = [90, 30];
+
+// This Monday at local midnight.
+function weekStart() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.getTime();
+}
 
 async function main() {
   const argv = process.argv.slice(2);
@@ -144,6 +152,8 @@ async function main() {
       const x = await run(Date.now() - days * 24 * 60 * 60 * 1000);
       views.push({ key: `d${days}`, label: t.report.rangeDays(days), r: x, found: find(x) });
     }
+    const week = await run(weekStart());
+    views.push({ key: 'week', label: t.report.rangeWeek, r: week, found: find(week) });
   }
   fs.writeFileSync(out, report.htmlViews(views, { scope: opts.project }));
   console.log(t.done(r.conversations, found.length, out));

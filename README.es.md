@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.3`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.8.0`.
 
 **Instalándolo globalmente:**
 
@@ -61,7 +61,7 @@ Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insigh
 npx agy-insights
 ```
 
-Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite de fecha), guarda un informe HTML en la carpeta temporal y lo abre en el navegador. En el informe puedes cambiar entre todo el historial y los últimos 90, 30 o 7 días: los totales, la gráfica, los hallazgos y las tablas siguen el periodo elegido.
+Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite de fecha), guarda un informe HTML en la carpeta temporal y lo abre en el navegador. En el informe puedes cambiar entre todo el historial y los últimos 90 o 30 días, o esta semana (desde el lunes): los totales, la gráfica, los hallazgos y las tablas siguen el periodo elegido.
 
 | Para… | Ejecuta |
 |---|---|
@@ -82,7 +82,7 @@ El informe da dos cifras:
 
 ## Leer el informe
 
-Arriba están el selector de periodo y los totales. Después, una gráfica de **consumo de tokens por día** (por semana si el historial pasa de ~4 meses) para ver la evolución; pasa el ratón por una columna para ver sus cifras, o abre «Ver como tabla». Después, **Modelos y esfuerzo**: llamadas y tokens reales por modelo y nivel de esfuerzo (por ejemplo Gemini 3.8 Flash · Alto), con los tokens por llamada, para ver cuánto cuesta un esfuerzo mayor. Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
+Arriba están el selector de periodo y los totales. Después, una gráfica de **consumo de tokens por día** (por semana si el historial pasa de ~4 meses) para ver la evolución. Cámbiala a **Por llamada** para ver los tokens medios de cada llamada al modelo: el total sube y baja según cuánto hayas trabajado, mientras que por llamada solo baja si cada llamada lleva menos contexto, así que es la que muestra si un cambio ha servido. Pasa el ratón por una columna para ver sus cifras, o abre «Ver como tabla». Después, **Modelos y esfuerzo**: llamadas y tokens reales por modelo y nivel de esfuerzo (por ejemplo Gemini 3.8 Flash · Alto), con los tokens por llamada, para ver cuánto cuesta un esfuerzo mayor. Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
 
 | Hallazgo | Qué significa | Qué hacer |
 |---|---|---|
