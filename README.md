@@ -78,7 +78,7 @@ Analyzes your whole history (every conversation agy has kept, with no date limit
 The report gives two figures:
 
 - **Real usage**: the tokens Antigravity records in each conversation's log (`~/.gemini/antigravity-cli/brain/<id>/.system_generated/logs/transcript.jsonl`), subagents included. It is shown with and without cache, because it is unknown whether the quota counts cache the same way. This is the figure to compare between teammates.
-- **"~tokens"**: estimated from the stored size of each step. Useful to compare which files, folders or commands weigh the most, but they fall short of real usage, because every model call resends the accumulated context.
+- **"~tokens"**: estimated from the stored size of each step. Useful to compare which files, folders or commands weigh the most, but they fall short of real usage, because every model call resends the accumulated context. Images (screenshots, for example) are estimated by their size in pixels, as Gemini counts them (258 tokens per 768 px tile), not by their bytes.
 
 ## Reading the report
 
@@ -98,7 +98,10 @@ Expand **How to exclude it** on a proposal. You'll see the exact file, where the
 
 ### 1. Deny reading it (Antigravity permission)
 
-This is the only thing that actually stops the agent from reading a path. It uses the [official permissions](https://antigravity.google/docs/permissions).
+This is the only thing that actually stops the agent from reading a path. It uses the [official permissions](https://antigravity.google/docs/permissions). Where the rule goes depends on which Antigravity read the file, and the report proposes the right place:
+
+- **IDE, app or editor extension** (such as VS Code's): they have no settings file to edit. Add the rule (`read_file(<path>)`) as a deny rule in their **Settings → Permission Grants**, for all projects or for one.
+- **CLI (`agy`)**:
 
 1. Open `~/.gemini/antigravity-cli/settings.json` (on Windows, `%USERPROFILE%\.gemini\antigravity-cli\settings.json`).
 2. Paste the rule inside `"permissions"` → `"deny"`. Create them if they don't exist; if they do, add the rule without removing anything:
@@ -116,7 +119,7 @@ This is the only thing that actually stops the agent from reading a path. It use
 
 3. Save and restart `agy`.
 
-Denying reads on a path also blocks writing to it, and the rule applies to all your projects. Use it for folders the agent should never touch, such as build output.
+Denying reads on a path also blocks writing to it, and the rule applies to all your projects. Use it for folders the agent should never touch, such as build output. Nothing under `~/.gemini` or Antigravity's editor extensions is ever proposed: Antigravity needs those files to work.
 
 ### 2. `.antigravityignore`
 

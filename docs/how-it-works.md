@@ -102,5 +102,7 @@ node agy-insights.js --dir test/tmp/history
 ## To do
 
 - Confirm with `agy` that a `read_file` `deny` rule blocks the read.
+- Confirm that a deny rule added under Settings → Permission Grants blocks the read in the VS Code extension. Antigravity's own guide (`~/.gemini/antigravity/builtin/skills/antigravity_guide/references/app.md`) documents Permission Grants for the IDE and the app; `~/.gemini/antigravity/` has no `settings.json`, so `fixes.deny()` proposes the CLI's file only for paths the CLI read, and the Settings rule for paths the editor read (from each file's `origins`).
+- Image reads are estimated from the image's pixel size (`imageTokens()`: 258 tokens up to 384×384 px, else 258 per 768 px tile, as Gemini documents), read from the file's header; when the file can't be read, as 4 tiles.
 - Test with real histories from several developers (Windows and macOS).
 - Also read the history of the Antigravity app and IDE, if they use the same format.

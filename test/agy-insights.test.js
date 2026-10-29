@@ -5,7 +5,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { analyze } = require('../lib/history');
+const historyLib = require('../lib/history');
+const { analyze } = historyLib;
+const fixes = require('../lib/fixes');
 const { findings } = require('../lib/findings');
 const report = require('../lib/report');
 const { buildMap, START, END } = require('../lib/map');
@@ -313,6 +315,43 @@ test('reads the CLI and the editor history together, the first folder naming sha
   // A single origin shows neither the table nor the column.
   const one = await analyze({ dir: cli });
   assert.doesNotMatch(report.html(one, [], {}), /By origin|<th>Origin<\/th>/);
+});
+
+test('estimates images by their pixels, not their bytes', async () => {
+  const dir = path.join(tmp, 'images', 'conversations');
+  const id = '00000060-0000-4000-8000-000000000000';
+  // A 1170×2532 phone screenshot: 2 × 4 tiles of 768 px → 8 × 258 tokens. Only its header is needed.
+  const png = path.join(tmp, 'images', 'shot.png');
+  fs.mkdirSync(path.dirname(png), { recursive: true });
+  const header = Buffer.alloc(33);
+  header.writeUInt32BE(0x89504e47, 0); header.writeUInt32BE(1170, 16); header.writeUInt32BE(2532, 20);
+  fs.writeFileSync(png, header);
+  await writeConversation(dir, id, [userStep('x'), step('view_file', { AbsolutePath: png }, 400000)]);
+  const r = await analyze({ dir });
+  const f = r.files.find((x) => x.abs.endsWith('shot.png'));
+  // Plus the small step that requests the read, as for any file; not the 100,000 of the stored bytes.
+  assert.equal(f.kind, 'images');
+  assert.ok(f.tokens >= 8 * 258 && f.tokens < 8 * 258 + 100, String(f.tokens));
+  // A tiny image is one tile; a missing file falls back to a typical screenshot.
+  const small = path.join(tmp, 'images', 'icon.png');
+  header.writeUInt32BE(64, 16); header.writeUInt32BE(64, 20);
+  fs.writeFileSync(small, header);
+  assert.equal(historyLib.imageTokens(small), 258);
+  assert.equal(historyLib.imageTokens(path.join(tmp, 'images', 'gone.png')), 4 * 258);
+  assert.equal(i18n.kindLabel('images'), 'images');
+});
+
+test('exclusions follow who read the file, and never touch Antigravity\'s own files', () => {
+  const p = 'C:/dev/Acme/bin/Debug/app.dll';
+  assert.deepEqual(fixes.deny(p).map((f) => f.how), ['deny']);
+  assert.deepEqual(fixes.deny(p, ['editor']).map((f) => f.how), ['deny-editor']);
+  assert.deepEqual(fixes.deny(p, ['cli', 'editor']).map((f) => f.how), ['deny', 'deny-editor']);
+  assert.match(fixes.deny(p, ['editor'])[0].file, /Permission Grants/);
+  for (const own of ['/Users/ana/.gemini/antigravity/brain/x/logs/transcript.jsonl', 'C:/Users/ana/.gemini/antigravity-cli/x.log',
+    '/Users/ana/.vscode/extensions/google.google-antigravity-1.8.0/extension.js']) {
+    assert.deepEqual(fixes.deny(own, ['cli', 'editor']), []);
+    assert.equal(historyLib.kind(own), 'agent');
+  }
 });
 
 test('takes real usage from gen_metadata when the log has no token counts', async () => {

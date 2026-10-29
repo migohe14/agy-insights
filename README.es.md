@@ -78,7 +78,7 @@ Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite 
 El informe da dos cifras:
 
 - **Consumo real**: los tokens que Antigravity anota en el registro de cada conversación (`~/.gemini/antigravity-cli/brain/<id>/.system_generated/logs/transcript.jsonl`), subagentes incluidos. Se muestra sin caché y con caché, porque no sabemos si la cuota cuenta igual la caché. Es la cifra que sirve para comparar entre compañeros.
-- **«~tokens»**: estimados a partir del tamaño guardado de cada paso. Sirven para comparar qué ficheros, carpetas o comandos pesan más, pero se quedan cortos frente al consumo real, porque cada llamada al modelo vuelve a enviar el contexto acumulado.
+- **«~tokens»**: estimados a partir del tamaño guardado de cada paso. Sirven para comparar qué ficheros, carpetas o comandos pesan más, pero se quedan cortos frente al consumo real, porque cada llamada al modelo vuelve a enviar el contexto acumulado. Las imágenes (capturas de pantalla, por ejemplo) se estiman por su tamaño en píxeles, como las cuenta Gemini (258 tokens por bloque de 768 px), y no por sus bytes.
 
 ## Leer el informe
 
@@ -98,7 +98,10 @@ Despliega **Cómo excluirlo** en una propuesta. Verás el fichero exacto, dónde
 
 ### 1. Denegar la lectura (permiso de Antigravity)
 
-Es lo único que impide de verdad que el agente lea una ruta. Usa los [permisos oficiales](https://antigravity.google/docs/permissions).
+Es lo único que impide de verdad que el agente lea una ruta. Usa los [permisos oficiales](https://antigravity.google/docs/permissions). Dónde va la regla depende de qué Antigravity leyó el fichero, y el informe propone el sitio correcto:
+
+- **IDE, app o extensión de editor** (como la de VS Code): no tienen un fichero de ajustes que editar. Añade la regla (`read_file(<ruta>)`) como regla de denegación en sus **Settings → Permission Grants**, para todos los proyectos o para uno.
+- **CLI (`agy`)**:
 
 1. Abre `~/.gemini/antigravity-cli/settings.json` (en Windows, `%USERPROFILE%\.gemini\antigravity-cli\settings.json`).
 2. Pega la regla dentro de `"permissions"` → `"deny"`. Si no existen, créalas; si existen, añade la regla sin borrar nada:
@@ -116,7 +119,7 @@ Es lo único que impide de verdad que el agente lea una ruta. Usa los [permisos 
 
 3. Guarda y reinicia `agy`.
 
-Denegar la lectura de una ruta también impide escribir en ella, y la regla vale para todos tus proyectos. Úsala para carpetas que el agente no deba tocar nunca, como salidas de compilación.
+Denegar la lectura de una ruta también impide escribir en ella, y la regla vale para todos tus proyectos. Úsala para carpetas que el agente no deba tocar nunca, como salidas de compilación. Nunca se propone nada de `~/.gemini` ni de las extensiones de editor de Antigravity: Antigravity necesita esos ficheros para funcionar.
 
 ### 2. `.antigravityignore`
 
