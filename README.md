@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.7.2`.
+`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.7.3`.
 
 **Globally:**
 
@@ -160,6 +160,8 @@ Copy `agy-insights.example.json` to `~/.agy-insights.json` (or pass it with `--c
 **"The history format is not recognized"**. A new Antigravity version has probably changed how it stores conversations. Run `npx agy-insights@latest`; if it persists, [open an issue](https://github.com/migohe14/agy-insights/issues).
 
 **I use the Antigravity app or IDE, not the CLI**. For now only the CLI history is read.
+
+**Many calls under model "unknown"**. agy recorded no model for them. Run `npx agy-insights@latest --debug-models` and paste the output into an [issue](https://github.com/migohe14/agy-insights/issues): it only has counts and model names.
 
 **The browser doesn't open**. The report path is printed in the terminal; open it manually.
 

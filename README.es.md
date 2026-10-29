@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.2`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.3`.
 
 **Instalándolo globalmente:**
 
@@ -160,6 +160,8 @@ Copia `agy-insights.example.json` a `~/.agy-insights.json` (o pásalo con `--con
 **«No se reconoce el formato del historial»**. Probablemente una versión nueva de Antigravity ha cambiado cómo guarda las conversaciones. Ejecuta `npx agy-insights@latest`; si sigue igual, [abre una incidencia](https://github.com/migohe14/agy-insights/issues).
 
 **Uso la app o el IDE de Antigravity, no el CLI**. Por ahora solo se lee el historial del CLI.
+
+**Muchas llamadas con modelo «desconocido»**. agy no anotó su modelo. Ejecuta `npx agy-insights@latest --debug-models` y pega el resultado en una [incidencia](https://github.com/migohe14/agy-insights/issues): solo contiene recuentos y nombres de modelo.
 
 **El navegador no se abre**. La ruta del informe aparece en la terminal; ábrela a mano.
 

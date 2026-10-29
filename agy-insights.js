@@ -32,6 +32,7 @@ function parseArgs(argv) {
     else if (a === '--lang') opts.lang = value();
     else if (a === '--since') opts.since = value();
     else if (a === '--days') opts.days = value();
+    else if (a === '--debug-models') opts.debugModels = true;
     else fail(t.unknownOption(a));
   }
   return opts;
@@ -82,6 +83,20 @@ function sinceTime({ since, days }) {
   return null;
 }
 
+// Tab-separated table of where each conversation's call models came from, for bug reports.
+function debugModels(r) {
+  const d = t.debugModels;
+  const sum = { rows: 0, rowsWithModel: 0, calls: 0, fromTranscript: 0, unknown: 0 };
+  const lines = [d.header.join('\t')];
+  for (const s of r.sessions) {
+    const m = s.modelSources;
+    for (const k of Object.keys(sum)) sum[k] += m[k];
+    lines.push([s.id.slice(0, 8), m.calls, m.rows, m.rowsWithModel, m.fromTranscript, m.unknown, s.model ? `${s.model.model} (${s.model.effort})` : ''].join('\t'));
+  }
+  lines.push([d.total, sum.calls, sum.rows, sum.rowsWithModel, sum.fromTranscript, sum.unknown, ''].join('\t'), '', d.note, '');
+  return lines.join('\n');
+}
+
 // Periods the HTML report can switch to, besides the whole history.
 const PRESET_DAYS = [90, 30, 7];
 
@@ -104,6 +119,7 @@ async function main() {
     customKinds: cfg.customKinds || {},
   });
   const r = await run(since);
+  if (opts.debugModels) return process.stdout.write(debugModels(r));
   if (opts.map) {
     const m = buildMap(opts.project, { ...cfg.map, history: r.files });
     console.log(m.block);

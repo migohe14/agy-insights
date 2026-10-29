@@ -267,8 +267,9 @@ test('reports the model and effort level of each call, with its real tokens', as
   const r = await analyze({ dir });
   const by = (model, effort) => r.models.find((m) => m.model === model && m.effort === effort);
   assert.deepEqual({ ...by('Gemini 3.8 Flash', 'High'), }, { model: 'Gemini 3.8 Flash', effort: 'High', calls: 2, convs: 1, input: 3000, cache: 0, output: 300, known: 2 });
-  assert.equal(by('Gemini 3.8 Pro', 'Low').input, 5000);
-  assert.equal(by('gemini-3.8-pro', 'low').known, 0);
+  // "gemini-3.8-pro-low" (id spelling, no transcript) and "Gemini 3.8 Pro (Low)" are one model.
+  assert.deepEqual(by('Gemini 3.8 Pro', 'Low'), { model: 'Gemini 3.8 Pro', effort: 'Low', calls: 2, convs: 2, input: 5000, cache: 0, output: 500, known: 1 });
+  assert.equal(r.models.length, 2);
   assert.equal(r.sessions.find((s) => s.id === a).model.model, 'Gemini 3.8 Flash');
   assert.equal(r.sessions.find((s) => s.id === a).models, 2);
 
@@ -278,7 +279,7 @@ test('reports the model and effort level of each call, with its real tokens', as
   assert.match(report.html(r, findings(r), {}), /<h2>Models and effort<\/h2>/);
   i18n.setLang('es');
   try {
-    assert.match(report.text(r, findings(r), {}), /Gemini 3\.8 Pro · Bajo {2}1 llamada/);
+    assert.match(report.text(r, findings(r), {}), /Gemini 3\.8 Pro · Bajo {2}2 llamadas/);
   } finally {
     i18n.setLang('en');
   }
@@ -363,4 +364,40 @@ test('dates each session in the long sessions finding and the sessions table', a
     i18n.setLang('en');
   }
   assert.equal(i18n.when(null, null), '');
+});
+
+test('takes the model from the transcript when gen_metadata does not match the calls', async () => {
+  const dir = path.join(tmp, 'models-mismatch', 'conversations');
+  const id = '00000070-0000-4000-8000-000000000000';
+  // Two gen_metadata rows for four calls: pairing by position would mislabel them.
+  await writeConversation(dir, id, [userStep('x')], ['Gemini 3.8 Flash (High)', 'Gemini 4 Argon (Medium)']);
+  const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+  fs.mkdirSync(logs, { recursive: true });
+  const input = (model) => JSON.stringify({ type: 'USER_INPUT', content: `<USER_SETTINGS_CHANGE>\nThe user changed setting \`Model Selection\` from None to ${model}. No need to comment on this change.\n</USER_SETTINGS_CHANGE>` });
+  const call = (n) => JSON.stringify({ type: 'PLANNER_RESPONSE', input_tokens: n, output_tokens: 0 });
+  fs.writeFileSync(path.join(logs, 'transcript.jsonl'), [
+    input('Gemini 3.8 Flash (High)'), call(100), call(200), input('Gemini 4 Argon (Medium)'), call(1000), call(2000),
+  ].join('\n'));
+
+  const r = await analyze({ dir });
+  const by = (model) => r.models.find((m) => m.model === model);
+  assert.equal(by('Gemini 3.8 Flash').input, 300);
+  assert.equal(by('Gemini 4 Argon').input, 3000);
+  assert.equal(r.models.length, 2);
+  assert.deepEqual(r.sessions[0].modelSources, { rows: 2, rowsWithModel: 2, calls: 4, fromTranscript: 4, unknown: 0 });
+});
+
+test('a conversation with a single model labels every call with it, even without matching rows', async () => {
+  const dir = path.join(tmp, 'models-single', 'conversations');
+  const id = '00000071-0000-4000-8000-000000000000';
+  await writeConversation(dir, id, [userStep('x')], ['gemini-3.8-flash-medium']);
+  writeTranscript(dir, id, [[100, 0, 1], [200, 0, 1], [300, 0, 1]]);
+  const r = await analyze({ dir });
+  assert.deepEqual(r.models.map((m) => [m.model, m.effort, m.calls, m.input]), [['gemini-3.8-flash', 'medium', 3, 600]]);
+});
+
+test('reads the selected model from a settings change', () => {
+  const { selectedModel } = require('../lib/history');
+  assert.deepEqual(selectedModel('The user changed setting `Model Selection` from None to Gemini 3.8 Flash (High). No need to comment.'), { model: 'Gemini 3.8 Flash', effort: 'High' });
+  assert.equal(selectedModel('no settings here'), null);
 });
