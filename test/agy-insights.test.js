@@ -221,3 +221,39 @@ test('uses the singular for one call, error or conversation', () => {
   i18n.setLang('en');
   assert.equal(i18n.t.done(1, 1, 'x'), '1 conversation analyzed, 1 finding.\nReport: x');
 });
+
+test('the HTML report charts real usage per day and switches between periods', async () => {
+  const dir = path.join(tmp, 'charted', 'conversations');
+  const days = [1, 3, 20];
+  for (const [i, d] of days.entries()) {
+    const id = `0000002${i}-0000-4000-8000-000000000000`;
+    await writeConversation(dir, id, [userStep('x'), step('view_file', { AbsolutePath: `${ACME}\a.cs` }, 100)]);
+    const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+    fs.mkdirSync(logs, { recursive: true });
+    const at = new Date(Date.now() - d * 864e5).toISOString();
+    fs.writeFileSync(path.join(logs, 'transcript.jsonl'), JSON.stringify({ type: 'PLANNER_RESPONSE', created_at: at, input_tokens: 1000 * (i + 1), cache_read_tokens: 5, output_tokens: 10 }));
+  }
+  const r = await analyze({ dir });
+  assert.deepEqual(r.daily.map((x) => x.input), [3000, 2000, 1000]);
+  const week = await analyze({ dir, since: Date.now() - 7 * 864e5 });
+  assert.equal(week.daily.length, 2);
+
+  const page = report.htmlViews([
+    { key: 'all', label: 'All history', r, found: findings(r) },
+    { key: 'd7', label: 'Last 7 days', r: week, found: findings(week) },
+  ], {});
+  assert.equal((page.match(/class="col"/g) || []).length, 3 + 2);
+  assert.match(page, /<button type="button" data-view="d7" aria-pressed="false">Last 7 days<\/button>/);
+  assert.match(page, /<div class="view" data-view="d7" hidden>/);
+  assert.match(page, /Token usage per day/);
+  // A single period has no filter row.
+  assert.doesNotMatch(report.html(r, findings(r), {}), /class="filter"/);
+});
+
+test('the command writes a report with the period presets', () => {
+  const out = path.join(tmp, 'presets.html');
+  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', history, '--out', out, '--no-open', '--lang', 'es'], { encoding: 'utf8' });
+  assert.equal(res.status, 0, res.stderr);
+  const page = fs.readFileSync(out, 'utf8');
+  for (const label of ['Todo el historial', 'Últimos 90 días', 'Últimos 30 días', 'Últimos 7 días']) assert.ok(page.includes(`>${label}</button>`), label);
+});

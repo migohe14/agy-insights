@@ -1,6 +1,6 @@
 {
   "name": "agy-insights",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Measures Antigravity CLI token usage and shows which context is sent repeatedly or needlessly, in English or Spanish. Run: npx agy-insights",
   "license": "MIT",
   "keywords": [

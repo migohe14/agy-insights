@@ -82,6 +82,9 @@ function sinceTime({ since, days }) {
   return null;
 }
 
+// Periods the HTML report can switch to, besides the whole history.
+const PRESET_DAYS = [90, 30, 7];
+
 async function main() {
   const argv = process.argv.slice(2);
   // Language first, so that option errors are already in it.
@@ -93,29 +96,40 @@ async function main() {
   if (!opts.lang && cfg.lang && !setLang(cfg.lang)) fail(t.badLang(cfg.lang));
 
   if (opts.map) opts.project = opts.project || process.cwd();
-  const r = await analyze({
-    since: sinceTime(opts),
+  const since = sinceTime(opts);
+  const run = (from) => analyze({
+    since: from,
     dir: opts.dir || cfg.conversationsDir || DEFAULT_DIR,
     workspaces: opts.project ? [opts.project] : [],
     customKinds: cfg.customKinds || {},
   });
+  const r = await run(since);
   if (opts.map) {
     const m = buildMap(opts.project, { ...cfg.map, history: r.files });
     console.log(m.block);
     return console.error(t.mapDone(m.tokens, path.join(opts.project, 'AGENTS.md')));
   }
-  const found = findings(r, {
+  const find = (x) => findings(x, {
     crossSessionMin: cfg.crossSessionMin ?? DEFAULTS.crossSessionMin,
     heavyOutputTokens: cfg.heavyOutputTokens ?? DEFAULTS.heavyOutputTokens,
     longSessionTokens: cfg.longSessionTokens ?? DEFAULTS.longSessionTokens,
   });
+  const found = find(r);
 
   if (opts.text) return process.stdout.write(report.text(r, found, { scope: opts.project, paths: opts.paths }));
 
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   const out = opts.out || path.join(os.tmpdir(), 'agy-insights', `${t.reportName}-${stamp}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, report.html(r, found, { scope: opts.project }));
+  // Whole history by default, plus the presets the page can switch to. With --since/--days, just that period.
+  const views = [{ key: 'all', label: since ? '' : t.report.rangeAll, r, found }];
+  if (!since && r.conversations) {
+    for (const days of PRESET_DAYS) {
+      const x = await run(Date.now() - days * 24 * 60 * 60 * 1000);
+      views.push({ key: `d${days}`, label: t.report.rangeDays(days), r: x, found: find(x) });
+    }
+  }
+  fs.writeFileSync(out, report.htmlViews(views, { scope: opts.project }));
   console.log(t.done(r.conversations, found.length, out));
   if (opts.open) openInBrowser(out);
 }

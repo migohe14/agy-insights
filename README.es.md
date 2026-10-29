@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-Para fijar una versión: `npx agy-insights@0.5.0`.
+Para fijar una versión: `npx agy-insights@0.6.0`.
 
 **Instalándolo globalmente:**
 
@@ -59,7 +59,7 @@ Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insigh
 npx agy-insights
 ```
 
-Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite de fecha), guarda un informe HTML en la carpeta temporal y lo abre en el navegador. El informe indica el periodo que cubre.
+Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite de fecha), guarda un informe HTML en la carpeta temporal y lo abre en el navegador. En el informe puedes cambiar entre todo el historial y los últimos 90, 30 o 7 días: los totales, la gráfica, los hallazgos y las tablas siguen el periodo elegido.
 
 | Para… | Ejecuta |
 |---|---|
@@ -68,8 +68,7 @@ Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite 
 | Un resumen en la terminal | `npx agy-insights --text` |
 | El resumen con rutas y exclusiones | `npx agy-insights --text --paths` |
 | Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights --map --project <carpeta>` |
-| Solo los últimos 7 días | `npx agy-insights --days 7` |
-| Solo desde una fecha | `npx agy-insights --since 2026-10-01` |
+| Solo un periodo a medida (el informe ya no tiene selector de periodo) | `npx agy-insights --since 2026-10-01` o `--days 14` |
 | Elegir el idioma (español o inglés) | `npx agy-insights --lang es` |
 | Guardar el informe en otro sitio | `npx agy-insights --out informe.html --no-open` |
 | Ver todas las opciones | `npx agy-insights --help` |
@@ -81,7 +80,7 @@ El informe da dos cifras:
 
 ## Leer el informe
 
-Arriba están los totales. Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
+Arriba están el selector de periodo y los totales. Después, una gráfica de **consumo de tokens por día** (por semana si el historial pasa de ~4 meses) para ver la evolución; pasa el ratón por una columna para ver sus cifras, o abre «Ver como tabla». Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
 
 | Hallazgo | Qué significa | Qué hacer |
 |---|---|---|

@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-To pin a version: `npx agy-insights@0.5.0`.
+To pin a version: `npx agy-insights@0.6.0`.
 
 **Globally:**
 
@@ -59,7 +59,7 @@ Then run it with `node agy-insights/agy-insights.js` instead of `npx agy-insight
 npx agy-insights
 ```
 
-Analyzes your whole history (every conversation agy has kept, with no date limit), saves an HTML report in the temp folder and opens it in the browser. The report shows the period it covers.
+Analyzes your whole history (every conversation agy has kept, with no date limit), saves an HTML report in the temp folder and opens it in the browser. In the report you can switch between the whole history and the last 90, 30 or 7 days: totals, chart, findings and tables all follow the selected period.
 
 | To… | Run |
 |---|---|
@@ -68,8 +68,7 @@ Analyzes your whole history (every conversation agy has kept, with no date limit
 | Get a summary in the terminal | `npx agy-insights --text` |
 | Get the summary with paths and exclusions | `npx agy-insights --text --paths` |
 | Get a project map to paste into `AGENTS.md` (folders, large files, generated folders; ~20 lines even for a large repo) | `npx agy-insights --map --project <folder>` |
-| Only the last 7 days | `npx agy-insights --days 7` |
-| Only since a date | `npx agy-insights --since 2026-10-01` |
+| Only a custom period (the report then has no period selector) | `npx agy-insights --since 2026-10-01` or `--days 14` |
 | Choose the language (English or Spanish) | `npx agy-insights --lang es` |
 | Save the report somewhere else | `npx agy-insights --out report.html --no-open` |
 | See all options | `npx agy-insights --help` |
@@ -81,7 +80,7 @@ The report gives two figures:
 
 ## Reading the report
 
-The totals are at the top. Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
+At the top, the period selector and the totals. Then a chart of **token usage per day** (per week when the history spans more than ~4 months), to see how usage evolves; hover a column for its figures, or open "View as table". Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
 
 | Finding | What it means | What to do |
 |---|---|---|
