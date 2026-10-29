@@ -1,7 +1,7 @@
 {
   "name": "agy-insights",
-  "version": "0.3.0",
-  "description": "Muestra qué contexto se envía a Antigravity de forma repetida o innecesaria, a partir del historial local de Antigravity CLI.",
+  "version": "0.3.1",
+  "description": "Mide el consumo de tokens de Antigravity CLI y muestra qué contexto se envía de forma repetida o innecesaria. Uso: npx agy-insights",
   "license": "MIT",
   "keywords": [
     "antigravity",
@@ -36,5 +36,11 @@
   "homepage": "https://github.com/migohe14/agy-insights#readme",
   "bugs": {
     "url": "https://github.com/migohe14/agy-insights/issues"
+  },
+  "main": "agy-insights.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
   }
 }

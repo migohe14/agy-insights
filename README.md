@@ -7,13 +7,20 @@ Te muestra qué contexto le estás mandando a **Antigravity** de forma repetida 
 - Solo propone mecanismos oficiales de Antigravity.
 - Funciona con cualquier editor, en Windows, macOS y Linux.
 
+```sh
+npx agy-insights          # informe HTML en el navegador
+npx agy-insights --text   # resumen en la terminal
+```
+
+Solo necesitas Node.js 20 o superior y haber usado Antigravity CLI (`agy`) en el equipo.
+
 ## Por qué
 
 Cada fichero que lee el agente y cada salida de comando entra en el contexto y se reenvía en los turnos siguientes de la conversación. La cuota es una bolsa común, así que cada lectura innecesaria la gasta para todos. Esta herramienta te enseña dónde se va ese contexto: relecturas, carpetas de compilación, salidas de tests enormes y sesiones demasiado largas.
 
 ## Requisitos
 
-- **Node.js 20 o superior** (`node --version`). No hace falta `npm install`.
+- **Node.js 20 o superior** (`node --version`).
 - Haber usado **Antigravity CLI** (`agy`) en este equipo. El historial está en `~/.gemini/antigravity-cli/conversations` (en Windows, `%USERPROFILE%\.gemini\antigravity-cli\conversations`).
 
 ## Instalar
@@ -27,7 +34,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-Para fijar una versión: `npx agy-insights@0.3.0`. En los ejemplos de abajo, cambia `node agy-insights.js` por `npx agy-insights`.
+Para fijar una versión: `npx agy-insights@0.3.1`.
 
 **Instalándolo globalmente:**
 
@@ -42,25 +49,25 @@ agy-insights
 git clone https://github.com/migohe14/agy-insights.git
 ```
 
-Para actualizar: `git pull` dentro de la carpeta. Opcional, para tener el comando `agy-insights` en cualquier carpeta: `npm install -g .` dentro de ella.
+Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insights`. Para actualizar: `git pull` dentro de la carpeta.
 
 ## Usar
 
 ```sh
-node agy-insights/agy-insights.js
+npx agy-insights
 ```
 
 Analiza todo tu historial, guarda un informe HTML en la carpeta temporal y lo abre en el navegador.
 
 | Para… | Ejecuta |
 |---|---|
-| Ver solo un proyecto | `node agy-insights.js --project C:\dev\mi-proyecto` |
-| Ver el proyecto de la carpeta actual | `node <ruta>/agy-insights.js --project .` |
-| Un resumen en la terminal | `node agy-insights.js --text` |
-| El resumen con rutas y exclusiones | `node agy-insights.js --text --paths` |
-| Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `node agy-insights.js --map --project <carpeta>` |
-| Guardar el informe en otro sitio | `node agy-insights.js --out informe.html --no-open` |
-| Ver todas las opciones | `node agy-insights.js --help` |
+| Ver solo un proyecto | `npx agy-insights --project C:\dev\mi-proyecto` |
+| Ver el proyecto de la carpeta actual | `npx agy-insights --project .` |
+| Un resumen en la terminal | `npx agy-insights --text` |
+| El resumen con rutas y exclusiones | `npx agy-insights --text --paths` |
+| Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights --map --project <carpeta>` |
+| Guardar el informe en otro sitio | `npx agy-insights --out informe.html --no-open` |
+| Ver todas las opciones | `npx agy-insights --help` |
 
 El informe da dos cifras:
 
