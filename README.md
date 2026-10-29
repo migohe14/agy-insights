@@ -20,19 +20,26 @@ Cada fichero que lee el agente y cada salida de comando entra en el contexto y s
 
 No tiene dependencias. Elige una forma:
 
-**Con `npx`, sin instalar nada** (necesitas acceso al repositorio de GitLab):
+**Con `npx`, sin instalar nada:**
 
 ```sh
-npx --yes git+https://<gitlab>/<grupo>/agy-insights.git
-npx --yes git+https://<gitlab>/<grupo>/agy-insights.git --text
+npx agy-insights
+npx agy-insights --text
 ```
 
-Con SSH: `git+ssh://git@<gitlab>/<grupo>/agy-insights.git`. Cada ejecución usa la última versión de la rama principal; para fijar una versión, añade `#v0.3.0` (una etiqueta) al final de la URL. En los ejemplos de abajo, cambia `node agy-insights.js` por ese `npx …`.
+Para fijar una versión: `npx agy-insights@0.3.0`. En los ejemplos de abajo, cambia `node agy-insights.js` por `npx agy-insights`.
+
+**Instalándolo globalmente:**
+
+```sh
+npm install -g agy-insights
+agy-insights
+```
 
 **Clonando el repositorio:**
 
 ```sh
-git clone <url-del-repo> agy-insights
+git clone https://github.com/migohe14/agy-insights.git
 ```
 
 Para actualizar: `git pull` dentro de la carpeta. Opcional, para tener el comando `agy-insights` en cualquier carpeta: `npm install -g .` dentro de ella.

@@ -75,12 +75,11 @@ node agy-insights.js --dir test/tmp/history
 
 ## Paquete npm
 
-`package.json` define el comando (`bin`) y qué ficheros entran en el paquete (`files`: el comando, `lib/`, `vendor/`, `docs/` y el ejemplo de configuración; los tests no). Está marcado como `private` para que no se publique por error.
+`package.json` define el comando (`bin`) y qué ficheros entran en el paquete (`files`: el comando, `lib/`, `vendor/`, `docs/` y el ejemplo de configuración; los tests no). Se publica en el registro público de npm como `agy-insights`. El paquete solo contiene la herramienta; los historiales que analiza se quedan en la máquina de cada usuario.
 
-- **Desde el repositorio**, sin publicar: `npx --yes git+https://<gitlab>/<grupo>/agy-insights.git`. Al no tener dependencias ni paso de build, npm lo instala directamente desde git.
 - **Probar el paquete en local**: `npm pack` y después `npx --yes --package=./agy-insights-<versión>.tgz agy-insights --help`.
-- **Publicarlo en el registro de paquetes de GitLab** (opcional, para `npx @<grupo>/agy-insights`): cambiar `name` a `@<grupo>/agy-insights`, quitar `private`, añadir `"publishConfig": { "registry": "https://<gitlab>/api/v4/projects/<id>/packages/npm/" }` y un job de CI que ejecute `npm publish` con `CI_JOB_TOKEN`. Cada dev necesita en su `.npmrc` la línea `@<grupo>:registry=https://<gitlab>/api/v4/packages/npm/` y un token de lectura.
-
+- **Desde el repositorio**, sin publicar: `npx --yes github:migohe14/agy-insights`. Al no tener dependencias ni paso de build, npm lo instala directamente desde git.
+- **Publicar una versión**: `npm version <patch|minor|major>` (actualiza `package.json` y crea la etiqueta `v…`) y `git push --follow-tags`. El workflow `.github/workflows/publish.yml` pasa los tests y ejecuta `npm publish --provenance`. Necesita el secreto `NPM_TOKEN` en el repositorio de GitHub (un token de npm de tipo *Automation* o *Granular* con permiso de publicación).
 
 ## Pendiente
 

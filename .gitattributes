@@ -1,0 +1,3 @@
+# LF everywhere: the bin's shebang breaks on macOS/Linux with CRLF.
+* text=auto eol=lf
+*.wasm binary

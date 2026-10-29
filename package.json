@@ -2,14 +2,39 @@
   "name": "agy-insights",
   "version": "0.3.0",
   "description": "Muestra qué contexto se envía a Antigravity de forma repetida o innecesaria, a partir del historial local de Antigravity CLI.",
-  "private": true,
-  "license": "UNLICENSED",
-  "keywords": ["antigravity", "agy", "tokens", "context"],
-  "bin": { "agy-insights": "agy-insights.js" },
-  "files": ["agy-insights.js", "lib/", "vendor/", "agy-insights.example.json", "docs/"],
-  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "agy",
+    "gemini",
+    "tokens",
+    "context",
+    "cli"
+  ],
+  "bin": {
+    "agy-insights": "agy-insights.js"
+  },
+  "files": [
+    "agy-insights.js",
+    "lib/",
+    "vendor/",
+    "agy-insights.example.json",
+    "docs/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node agy-insights.js",
     "test": "node --test test/agy-insights.test.js"
+  },
+  "author": "Miguel Gonzalez",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/migohe14/agy-insights.git"
+  },
+  "homepage": "https://github.com/migohe14/agy-insights#readme",
+  "bugs": {
+    "url": "https://github.com/migohe14/agy-insights/issues"
   }
 }
