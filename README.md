@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-To pin a version: `npx agy-insights@0.4.0`.
+To pin a version: `npx agy-insights@0.5.0`.
 
 **Globally:**
 
@@ -59,7 +59,7 @@ Then run it with `node agy-insights/agy-insights.js` instead of `npx agy-insight
 npx agy-insights
 ```
 
-Analyzes your whole history, saves an HTML report in the temp folder and opens it in the browser.
+Analyzes your whole history (every conversation agy has kept, with no date limit), saves an HTML report in the temp folder and opens it in the browser. The report shows the period it covers.
 
 | To… | Run |
 |---|---|
@@ -68,6 +68,8 @@ Analyzes your whole history, saves an HTML report in the temp folder and opens i
 | Get a summary in the terminal | `npx agy-insights --text` |
 | Get the summary with paths and exclusions | `npx agy-insights --text --paths` |
 | Get a project map to paste into `AGENTS.md` (folders, large files, generated folders; ~20 lines even for a large repo) | `npx agy-insights --map --project <folder>` |
+| Only the last 7 days | `npx agy-insights --days 7` |
+| Only since a date | `npx agy-insights --since 2026-10-01` |
 | Choose the language (English or Spanish) | `npx agy-insights --lang es` |
 | Save the report somewhere else | `npx agy-insights --out report.html --no-open` |
 | See all options | `npx agy-insights --help` |

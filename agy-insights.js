@@ -30,6 +30,8 @@ function parseArgs(argv) {
     else if (a === '--dir') opts.dir = path.resolve(value());
     else if (a === '--config') opts.config = path.resolve(value());
     else if (a === '--lang') opts.lang = value();
+    else if (a === '--since') opts.since = value();
+    else if (a === '--days') opts.days = value();
     else fail(t.unknownOption(a));
   }
   return opts;
@@ -65,6 +67,21 @@ function openInBrowser(file) {
   } catch { /* the path is printed anyway */ }
 }
 
+// --since YYYY-MM-DD (local midnight) or --days n (n days back from now), as a time in ms; null for all.
+function sinceTime({ since, days }) {
+  if (since) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(since);
+    const d = m && new Date(+m[1], m[2] - 1, +m[3]);
+    if (!d || d.getMonth() !== m[2] - 1) fail(t.badDate(since));
+    return d.getTime();
+  }
+  if (days !== undefined) {
+    if (!/^\d+$/.test(days)) fail(t.badDays(days));
+    return Date.now() - Number(days) * 24 * 60 * 60 * 1000;
+  }
+  return null;
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   // Language first, so that option errors are already in it.
@@ -77,6 +94,7 @@ async function main() {
 
   if (opts.map) opts.project = opts.project || process.cwd();
   const r = await analyze({
+    since: sinceTime(opts),
     dir: opts.dir || cfg.conversationsDir || DEFAULT_DIR,
     workspaces: opts.project ? [opts.project] : [],
     customKinds: cfg.customKinds || {},

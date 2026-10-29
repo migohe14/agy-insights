@@ -73,7 +73,7 @@ test('adds up the real usage from the transcripts, subagents included, and ranks
   assert.equal(r.sessions.find((s) => s.id === old).usage, null);
   const out = report.text(r, findings(r), {});
   assert.match(out, /Real usage: 69,300 tokens .* 282,900 including cache, in 4 model calls/);
-  assert.match(out, /1 conversations without a log/);
+  assert.match(out, /\(1 conversation without a log\)/);
   assert.match(report.html(r, findings(r), {}), /Sessions \(real usage\)/);
 });
 
@@ -181,4 +181,43 @@ test('rejects an unsupported language', () => {
 test('both languages define the same messages', () => {
   const keys = (o, p = '') => Object.entries(o).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? keys(v, `${p}${k}.`) : [`${p}${k}`])).sort();
   assert.deepEqual(keys(i18n.LANGS.es), keys(i18n.LANGS.en));
+});
+
+test('dates each conversation and filters by --since and --days', async () => {
+  const dir = path.join(tmp, 'dated', 'conversations');
+  const ids = ['00000010-0000-4000-8000-000000000000', '00000011-0000-4000-8000-000000000000', '00000012-0000-4000-8000-000000000000'];
+  for (const id of ids) await writeConversation(dir, id, [userStep('x'), step('view_file', { AbsolutePath: `${ACME}\a.cs` }, 100)]);
+  // Old one dated by the database's last write; the other two by their transcript's step times.
+  const old = new Date(2026, 0, 10, 12);
+  fs.utimesSync(path.join(dir, `${ids[0]}.db`), old, old);
+  const at = (d) => ({ type: 'PLANNER_RESPONSE', input_tokens: 1, output_tokens: 1, created_at: d.toISOString() });
+  for (const [id, days] of [[ids[1], [2, 2]], [ids[2], [40, 39]]]) {
+    const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+    fs.mkdirSync(logs, { recursive: true });
+    fs.writeFileSync(path.join(logs, 'transcript.jsonl'), days.map((d) => JSON.stringify(at(new Date(Date.now() - d * 864e5)))).join('\n'));
+  }
+
+  const all = await analyze({ dir });
+  assert.equal(all.conversations, 3);
+  assert.equal(all.period.from, old.getTime());
+  const recent = await analyze({ dir, since: Date.now() - 7 * 864e5 });
+  assert.equal(recent.conversations, 1);
+  assert.equal(recent.olderSkipped, 2);
+  assert.match(report.text(recent, findings(recent), {}), /Period: on .* \(filter: active since /);
+
+  const cli = (...args) => spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', dir, '--text', ...args], { encoding: 'utf8' });
+  assert.match(cli('--days', '7', '--lang', 'en').stdout, /^1 conversation, \d+ steps/m);
+  assert.match(cli('--since', '2026-01-01', '--lang', 'es').stdout, /^3 conversaciones/m);
+  assert.match(cli('--since', '2026-02-30', '--lang', 'en').stderr, /Invalid date: 2026-02-30/);
+  assert.match(cli('--days', 'x', '--lang', 'es').stderr, /Número de días no válido: x/);
+});
+
+test('uses the singular for one call, error or conversation', () => {
+  for (const lang of ['en', 'es']) {
+    i18n.setLang(lang);
+    const line = i18n.t.report.sessionLine('abc', 1, 1, '10');
+    assert.doesNotMatch(line, /\b1 (calls|errors|llamadas|errores)\b/);
+  }
+  i18n.setLang('en');
+  assert.equal(i18n.t.done(1, 1, 'x'), '1 conversation analyzed, 1 finding.\nReport: x');
 });

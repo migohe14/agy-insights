@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-Para fijar una versión: `npx agy-insights@0.4.0`.
+Para fijar una versión: `npx agy-insights@0.5.0`.
 
 **Instalándolo globalmente:**
 
@@ -59,7 +59,7 @@ Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insigh
 npx agy-insights
 ```
 
-Analiza todo tu historial, guarda un informe HTML en la carpeta temporal y lo abre en el navegador.
+Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite de fecha), guarda un informe HTML en la carpeta temporal y lo abre en el navegador. El informe indica el periodo que cubre.
 
 | Para… | Ejecuta |
 |---|---|
@@ -68,6 +68,8 @@ Analiza todo tu historial, guarda un informe HTML en la carpeta temporal y lo ab
 | Un resumen en la terminal | `npx agy-insights --text` |
 | El resumen con rutas y exclusiones | `npx agy-insights --text --paths` |
 | Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights --map --project <carpeta>` |
+| Solo los últimos 7 días | `npx agy-insights --days 7` |
+| Solo desde una fecha | `npx agy-insights --since 2026-10-01` |
 | Elegir el idioma (español o inglés) | `npx agy-insights --lang es` |
 | Guardar el informe en otro sitio | `npx agy-insights --out informe.html --no-open` |
 | Ver todas las opciones | `npx agy-insights --help` |
