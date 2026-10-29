@@ -10,7 +10,7 @@ const { findings } = require('../lib/findings');
 const report = require('../lib/report');
 const { buildMap, START, END } = require('../lib/map');
 const i18n = require('../lib/i18n');
-const { step, userStep, writeConversation, writeTranscript, acmeHistory, ACME } = require('./fake-history');
+const { step, userStep, writeConversation, writeTranscript, writeSummaries, acmeHistory, ACME } = require('./fake-history');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-insights-test-'));
 const history = path.join(tmp, 'history');
@@ -419,4 +419,24 @@ test('reads the selected model from a settings change', () => {
   const { selectedModel } = require('../lib/history');
   assert.deepEqual(selectedModel('The user changed setting `Model Selection` from None to Gemini 3.8 Flash (High). No need to comment.'), { model: 'Gemini 3.8 Flash', effort: 'High' });
   assert.equal(selectedModel('no settings here'), null);
+});
+
+test("shows each session's title from agy instead of its id, escaped in the HTML", async () => {
+  const dir = path.join(tmp, 'titled', 'conversations');
+  const a = '00000080-0000-4000-8000-000000000000', b = '00000081-0000-4000-8000-000000000000';
+  for (const id of [a, b]) {
+    await writeConversation(dir, id, [userStep('x')]);
+    writeTranscript(dir, id, [[90000, 0, 20000]]);
+  }
+  await writeSummaries(dir, { [a]: 'Fix <b>checkout</b> totals' });
+
+  const r = await analyze({ dir });
+  assert.equal(r.sessions.find((s) => s.id === a).title, 'Fix <b>checkout</b> totals');
+  assert.equal(r.sessions.find((s) => s.id === b).title, null);
+  const labels = byId(findings(r), 'long-sessions').items.map((i) => i.label);
+  assert.ok(labels.some((l) => l.startsWith('"Fix <b>checkout</b> totals" (00000080)')));
+  assert.ok(labels.some((l) => l.startsWith('conversation 00000081')));
+  const page = report.html(r, findings(r), {});
+  assert.ok(page.includes('Fix &lt;b&gt;checkout&lt;/b&gt; totals') && !page.includes('<b>checkout</b>'));
+  assert.match(report.text(r, findings(r), {}), /"Fix <b>checkout<\/b> totals" \(00000080\)/);
 });

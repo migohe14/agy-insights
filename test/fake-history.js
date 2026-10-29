@@ -88,7 +88,18 @@ async function acmeHistory(dir) {
   ]);
 }
 
-module.exports = { step, userStep, writeConversation, writeTranscript, acmeHistory, ACME };
+/** Writes agy's conversation_summaries.db next to the history: `titles` maps conversation id → title. */
+async function writeSummaries(dir, titles) {
+  const SQL = await initSqlJs({ locateFile: (f) => path.join(vendor, f) });
+  const db = new SQL.Database();
+  db.run('create table conversation_summaries (conversation_id text primary key, title text not null default "", preview text not null default "")');
+  for (const [id, title] of Object.entries(titles)) db.run('insert into conversation_summaries values (?, ?, ?)', [id, title, title]);
+  fs.mkdirSync(path.join(dir, '..'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '..', 'conversation_summaries.db'), Buffer.from(db.export()));
+  db.close();
+}
+
+module.exports = { step, userStep, writeConversation, writeTranscript, writeSummaries, acmeHistory, ACME };
 
 // Run directly to create a sample history: node test/fake-history.js <dir>
 if (require.main === module) {
