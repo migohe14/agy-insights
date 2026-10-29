@@ -308,8 +308,8 @@ test('reads the CLI and the editor history together, the first folder naming sha
   assert.deepEqual(r.origins.map((o) => [o.origin, o.conversations, o.input]), [['editor', 1, 2000], ['cli', 1, 1000]]);
   const page = report.html(r, findings(r), {});
   assert.match(page, /<h2>By origin<\/h2>/);
-  assert.match(page, /<td class="when">Editor \/ VS Code<\/td>/);
-  assert.match(report.text(r, [], {}), /By origin:\n\s+2,020\s+67%\s+Editor \/ VS Code \(1 conversation\)/);
+  assert.match(page, /<td class="when">IDE and extensions<\/td>/);
+  assert.match(report.text(r, [], {}), /By origin:\n\s+2,020\s+67%\s+IDE and extensions \(1 conversation\)/);
   // A single origin shows neither the table nor the column.
   const one = await analyze({ dir: cli });
   assert.doesNotMatch(report.html(one, [], {}), /By origin|<th>Origin<\/th>/);
