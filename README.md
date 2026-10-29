@@ -10,8 +10,8 @@ Shows which context you are sending to **Antigravity** repeatedly or needlessly,
 - Works with any editor, on Windows, macOS and Linux.
 
 ```sh
-npx agy-insights          # HTML report in the browser
-npx agy-insights --text   # summary in the terminal
+npx agy-insights@latest         # HTML report in the browser
+npx agy-insights@latest --text  # summary in the terminal
 ```
 
 All you need is Node.js 20 or later and to have used Antigravity CLI (`agy`) on this machine. The output is in English or Spanish, following your system language; force it with `--lang en` or `--lang es`.
@@ -33,10 +33,10 @@ It has no dependencies. Pick one:
 
 ```sh
 npx agy-insights
-npx agy-insights --text
+npx agy-insights@latest --text
 ```
 
-To pin a version: `npx agy-insights@0.7.0`.
+`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.7.0`.
 
 **Globally:**
 
@@ -45,13 +45,15 @@ npm install -g agy-insights
 agy-insights
 ```
 
+To update it: `npm install -g agy-insights@latest`.
+
 **From the repository:**
 
 ```sh
 git clone https://github.com/migohe14/agy-insights.git
 ```
 
-Then run it with `node agy-insights/agy-insights.js` instead of `npx agy-insights`. To update: `git pull` inside the folder.
+Then run it with `node agy-insights/agy-insights.js` instead of `npx agy-insights@latest`. To update: `git pull` inside the folder.
 
 ## Usage
 
@@ -63,15 +65,15 @@ Analyzes your whole history (every conversation agy has kept, with no date limit
 
 | To… | Run |
 |---|---|
-| See only one project | `npx agy-insights --project C:\dev\my-project` |
-| See the project in the current folder | `npx agy-insights --project .` |
-| Get a summary in the terminal | `npx agy-insights --text` |
-| Get the summary with paths and exclusions | `npx agy-insights --text --paths` |
-| Get a project map to paste into `AGENTS.md` (folders, large files, generated folders; ~20 lines even for a large repo) | `npx agy-insights --map --project <folder>` |
-| Only a custom period (the report then has no period selector) | `npx agy-insights --since 2026-10-01` or `--days 14` |
-| Choose the language (English or Spanish) | `npx agy-insights --lang es` |
-| Save the report somewhere else | `npx agy-insights --out report.html --no-open` |
-| See all options | `npx agy-insights --help` |
+| See only one project | `npx agy-insights@latest --project C:\dev\my-project` |
+| See the project in the current folder | `npx agy-insights@latest --project .` |
+| Get a summary in the terminal | `npx agy-insights@latest --text` |
+| Get the summary with paths and exclusions | `npx agy-insights@latest --text --paths` |
+| Get a project map to paste into `AGENTS.md` (folders, large files, generated folders; ~20 lines even for a large repo) | `npx agy-insights@latest --map --project <folder>` |
+| Only a custom period (the report then has no period selector) | `npx agy-insights@latest --since 2026-10-01` or `--days 14` |
+| Choose the language (English or Spanish) | `npx agy-insights@latest --lang es` |
+| Save the report somewhere else | `npx agy-insights@latest --out report.html --no-open` |
+| See all options | `npx agy-insights@latest --help` |
 
 The report gives two figures:
 

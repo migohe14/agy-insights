@@ -10,8 +10,8 @@ Te muestra qué contexto le estás mandando a **Antigravity** de forma repetida 
 - Funciona con cualquier editor, en Windows, macOS y Linux.
 
 ```sh
-npx agy-insights          # informe HTML en el navegador
-npx agy-insights --text   # resumen en la terminal
+npx agy-insights@latest         # informe HTML en el navegador
+npx agy-insights@latest --text  # resumen en la terminal
 ```
 
 Solo necesitas Node.js 20 o superior y haber usado Antigravity CLI (`agy`) en el equipo. La salida sale en español o en inglés según el idioma del sistema; puedes forzarlo con `--lang es` o `--lang en`.
@@ -33,10 +33,10 @@ No tiene dependencias. Elige una forma:
 
 ```sh
 npx agy-insights
-npx agy-insights --text
+npx agy-insights@latest --text
 ```
 
-Para fijar una versión: `npx agy-insights@0.7.0`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.0`.
 
 **Instalándolo globalmente:**
 
@@ -45,13 +45,15 @@ npm install -g agy-insights
 agy-insights
 ```
 
+Para actualizarlo: `npm install -g agy-insights@latest`.
+
 **Clonando el repositorio:**
 
 ```sh
 git clone https://github.com/migohe14/agy-insights.git
 ```
 
-Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insights`. Para actualizar: `git pull` dentro de la carpeta.
+Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insights@latest`. Para actualizar: `git pull` dentro de la carpeta.
 
 ## Usar
 
@@ -63,15 +65,15 @@ Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite 
 
 | Para… | Ejecuta |
 |---|---|
-| Ver solo un proyecto | `npx agy-insights --project C:\dev\mi-proyecto` |
-| Ver el proyecto de la carpeta actual | `npx agy-insights --project .` |
-| Un resumen en la terminal | `npx agy-insights --text` |
-| El resumen con rutas y exclusiones | `npx agy-insights --text --paths` |
-| Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights --map --project <carpeta>` |
-| Solo un periodo a medida (el informe ya no tiene selector de periodo) | `npx agy-insights --since 2026-10-01` o `--days 14` |
-| Elegir el idioma (español o inglés) | `npx agy-insights --lang es` |
-| Guardar el informe en otro sitio | `npx agy-insights --out informe.html --no-open` |
-| Ver todas las opciones | `npx agy-insights --help` |
+| Ver solo un proyecto | `npx agy-insights@latest --project C:\dev\mi-proyecto` |
+| Ver el proyecto de la carpeta actual | `npx agy-insights@latest --project .` |
+| Un resumen en la terminal | `npx agy-insights@latest --text` |
+| El resumen con rutas y exclusiones | `npx agy-insights@latest --text --paths` |
+| Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights@latest --map --project <carpeta>` |
+| Solo un periodo a medida (el informe ya no tiene selector de periodo) | `npx agy-insights@latest --since 2026-10-01` o `--days 14` |
+| Elegir el idioma (español o inglés) | `npx agy-insights@latest --lang es` |
+| Guardar el informe en otro sitio | `npx agy-insights@latest --out informe.html --no-open` |
+| Ver todas las opciones | `npx agy-insights@latest --help` |
 
 El informe da dos cifras:
 
