@@ -289,3 +289,18 @@ test('ignores model names inside longer text, like the system prompt', () => {
   assert.deepEqual(modelOf(['Prefer Gemini 3 Pro (High) for hard tasks.', 'gemini-3.8-flash-medium']), { model: 'gemini-3.8-flash', effort: 'medium' });
   assert.deepEqual(modelOf(['nothing here']), { model: null, effort: null });
 });
+
+test("never reports Antigravity's own brain or skills as generated files", async () => {
+  const dir = path.join(tmp, 'history-brain');
+  const brain = 'C:\\Users\\ana\\.gemini\\antigravity-cli\\brain\\0d74ebaa';
+  await writeConversation(dir, '00000040-0000-4000-8000-000000000000', [
+    userStep('x'),
+    step('view_file', { AbsolutePath: `${brain}\\.system_generated\\logs\\transcript.log` }, 30000),
+    step('view_file', { AbsolutePath: `${brain}\\browser\\out\\page.md` }, 30000),
+    step('view_file', { AbsolutePath: 'C:\\Users\\ana\\.gemini\\skills\\pdf\\SKILL.md' }, 9000),
+  ]);
+  const r = await analyze({ dir });
+  assert.deepEqual(r.kinds.map((k) => k.key), ['agent']);
+  assert.equal(byId(findings(r), 'non-source'), undefined);
+  assert.match(report.text(r, findings(r), {}), /Antigravity's own files \(brain, skills\)/);
+});

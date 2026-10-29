@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.7.0`.
+`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.7.1`.
 
 **Globally:**
 
@@ -87,7 +87,7 @@ At the top, the period selector and the totals. Then a chart of **token usage pe
 | Finding | What it means | What to do |
 |---|---|---|
 | The agent re-reads what it already had | It reads again a chunk of a file that was already in the conversation | Shorter sessions, one per task, or `/compact`. Don't exclude the file: the agent needs it. |
-| Generated, build or dependency files are being read | Reads from `bin/`, `obj/`, `dist/`, `node_modules`, migrations, lockfiles or logs | If they weren't needed, exclude them (see below) |
+| Generated, build or dependency files are being read | Reads from `bin/`, `obj/`, `dist/`, `node_modules`, migrations, lockfiles or logs (Antigravity's own files in `~/.gemini`, such as its brain, never count) | If they weren't needed, exclude them (see below) |
 | The same files enter many sessions | A file is read in several different conversations | Normal for core code; if it is large, tell the agent which part to look at |
 | Commands with very long output | The full output of tests or builds enters the context | Ask it to run only the affected test or project |
 | Very long sessions | Everything accumulated is resent on every turn | A new conversation per task |

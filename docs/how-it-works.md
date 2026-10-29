@@ -58,6 +58,8 @@ The project of each file is detected by walking up its path until a folder with 
 
 All user-facing text lives in `lib/i18n.js`, in an `en` and an `es` table with the same keys (a test checks it). Modules read it through `t`, which always points at the current language. The language comes from `--lang`, then the `lang` config key, then the system locale (`LC_ALL`, `LC_MESSAGES`, `LANG`, `LANGUAGE`, or `Intl`): Spanish if it starts with `es`, English otherwise. Numbers follow it too (`en-US` / `es-ES`).
 
+Anything under `~/.gemini/` is kind `agent`: the agent's own brain (plans, artifacts, its logs) and skills. It is checked first and is not in `NON_SOURCE`, so those reads are never reported as generated files or proposed for exclusion, even when a path contains `out/` or ends in `.log`.
+
 Built-in file kinds are stable ids (`build`, `logs`, `generated`, `code .cs`…) and are only turned into text when shown, with `kindLabel()`. Kinds from `customKinds` are shown as the user wrote them.
 
 To add a message, add it to both tables. To add a language, add a table and teach `detect()` to pick it.

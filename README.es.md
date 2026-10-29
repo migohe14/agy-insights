@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.0`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.7.1`.
 
 **Instalándolo globalmente:**
 
@@ -87,7 +87,7 @@ Arriba están el selector de periodo y los totales. Después, una gráfica de **
 | Hallazgo | Qué significa | Qué hacer |
 |---|---|---|
 | El agente vuelve a leer lo que ya tenía | Lee otra vez un trozo de fichero que ya estaba en la conversación | Sesiones más cortas, una por tarea, o `/compact`. No excluyas el fichero: lo necesita. |
-| Ficheros generados, compilados o de dependencias | Lecturas de `bin/`, `obj/`, `dist/`, `node_modules`, migraciones, lockfiles o logs | Si no hacían falta, exclúyelos (ver abajo) |
+| Ficheros generados, compilados o de dependencias | Lecturas de `bin/`, `obj/`, `dist/`, `node_modules`, migraciones, lockfiles o logs (los ficheros propios de Antigravity en `~/.gemini`, como su brain, nunca cuentan) | Si no hacían falta, exclúyelos (ver abajo) |
 | Los mismos ficheros entran en muchas sesiones | Un fichero se lee en varias conversaciones distintas | Si es código central es normal; si es grande, dile al agente qué parte mirar |
 | Comandos con salidas muy largas | La salida de tests o builds entra entera | Pide ejecutar solo el test o proyecto afectado |
 | Sesiones muy largas | Todo lo acumulado se reenvía en cada turno | Una conversación nueva por tarea |
