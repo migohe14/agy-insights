@@ -329,7 +329,14 @@ test('a build/ or bin/ folder kept in git is source code, not build output', asy
   assert.equal(kindOf('build/webpack/webpack.config.js'), 'code .js');
   assert.equal(kindOf('bin/cli.js'), 'code .js');
   assert.equal(kindOf('dist/bundle.js'), 'build');
-  assert.deepEqual(byId(findings(r), 'non-source').items.map((i) => i.label).filter((l) => !l.includes('"')), ['webfront › dist/']);
+  const items = byId(findings(r), 'non-source').items;
+  assert.deepEqual(items.map((i) => i.label).filter((l) => !l.includes('"')), ['webfront › dist/']);
+  // The project-wide pattern still covers dist/, obj/… but not the build/ and bin/ that hold sources here.
+  const pattern = items.find((i) => i.label.includes('"'));
+  const ignore = pattern.fixes.find((x) => x.how === 'ignore').text.split('\n');
+  assert.ok(ignore.includes('dist/') && ignore.includes('obj/'));
+  assert.ok(!ignore.includes('build/') && !ignore.includes('bin/'));
+  assert.doesNotMatch(pattern.fixes.find((x) => x.how === 'rule').text, /build\/|bin\//);
 
   const m = buildMap(project);
   assert.doesNotMatch(m.text, /Don't read.*build\//);
