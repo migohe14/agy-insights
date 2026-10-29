@@ -274,7 +274,7 @@ test('reports the model and effort level of each call, with its real tokens', as
 
   const text = report.text(r, findings(r), {});
   assert.match(text, /Gemini 3\.8 Flash · High {2}2 calls, 3,300 tokens/);
-  assert.match(text, /conversation 00000030 \(Gemini 3\.8 Flash · High \+1 more\)/);
+  assert.match(text, /conversation 00000030 · .+ \(Gemini 3\.8 Flash · High \+1 more\)/);
   assert.match(report.html(r, findings(r), {}), /<h2>Models and effort<\/h2>/);
   i18n.setLang('es');
   try {
@@ -341,4 +341,26 @@ test('a build/ or bin/ folder kept in git is source code, not build output', asy
   const m = buildMap(project);
   assert.doesNotMatch(m.text, /Don't read.*build\//);
   assert.match(m.text, /- build\/: webpack/);
+});
+
+test('dates each session in the long sessions finding and the sessions table', async () => {
+  const dir = path.join(tmp, 'long-dated', 'conversations');
+  const id = '00000060-0000-4000-8000-000000000000';
+  await writeConversation(dir, id, [userStep('x'), step('view_file', { AbsolutePath: `${ACME}\a.cs` }, 100)]);
+  const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+  fs.mkdirSync(logs, { recursive: true });
+  const call = (h, m) => JSON.stringify({ type: 'PLANNER_RESPONSE', created_at: new Date(2026, 9, 27, h, m).toISOString(), input_tokens: 80000, output_tokens: 30000 });
+  fs.writeFileSync(path.join(logs, 'transcript.jsonl'), [call(9, 5), call(10, 40)].join('\n'));
+
+  const r = await analyze({ dir });
+  const long = byId(findings(r), 'long-sessions').items[0];
+  assert.match(long.label, /^conversation 00000060 · Oct 27, 2026, 09:05 AM–10:40 AM$/);
+  assert.match(report.html(r, findings(r), {}), /<td class="when">Oct 27, 2026, 09:05 AM–10:40 AM<\/td>/);
+  i18n.setLang('es');
+  try {
+    assert.match(byId(findings(r), 'long-sessions').items[0].label, /^conversación 00000060 · 27 oct 2026, 9:05–10:40$|^conversación 00000060 · 27 oct 2026, 09:05–10:40$/);
+  } finally {
+    i18n.setLang('en');
+  }
+  assert.equal(i18n.when(null, null), '');
 });
