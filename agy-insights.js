@@ -91,9 +91,9 @@ function debugModels(r) {
   for (const s of r.sessions) {
     const m = s.modelSources;
     for (const k of Object.keys(sum)) sum[k] += m[k];
-    lines.push([s.id.slice(0, 8), m.calls, m.rows, m.rowsWithModel, m.fromTranscript, m.unknown, s.model ? `${s.model.model} (${s.model.effort})` : ''].join('\t'));
+    lines.push([s.id.slice(0, 8), m.calls, m.rows, m.rowsWithModel, m.fromTranscript, m.unknown, s.model ? `${s.model.model} (${s.model.effort})` : '', m.unknown ? m.candidates.join(' | ') : ''].join('\t'));
   }
-  lines.push([d.total, sum.calls, sum.rows, sum.rowsWithModel, sum.fromTranscript, sum.unknown, ''].join('\t'), '', d.note, '');
+  lines.push([d.total, sum.calls, sum.rows, sum.rowsWithModel, sum.fromTranscript, sum.unknown, '', ''].join('\t'), '', d.note, '');
   return lines.join('\n');
 }
 

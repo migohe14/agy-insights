@@ -384,7 +384,26 @@ test('takes the model from the transcript when gen_metadata does not match the c
   assert.equal(by('Gemini 3.8 Flash').input, 300);
   assert.equal(by('Gemini 4 Argon').input, 3000);
   assert.equal(r.models.length, 2);
-  assert.deepEqual(r.sessions[0].modelSources, { rows: 2, rowsWithModel: 2, calls: 4, fromTranscript: 4, unknown: 0 });
+  assert.deepEqual(r.sessions[0].modelSources, { rows: 2, rowsWithModel: 2, calls: 4, fromTranscript: 4, unknown: 0, candidates: [] });
+});
+
+test('--debug-models lists unrecognized model ids, and only short id-like strings', async () => {
+  const dir = path.join(tmp, 'models-unknown', 'conversations');
+  const id = '00000072-0000-4000-8000-000000000000';
+  // A model id in a format agy-insights does not know, next to prose and a path that must not be shown.
+  await writeConversation(dir, id, [userStep('x')], ['MODEL_PLACEHOLDER_M26', 'You are a helpful agent. Read C:\\secret\\code.cs carefully.']);
+  const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+  fs.mkdirSync(logs, { recursive: true });
+  fs.writeFileSync(path.join(logs, 'transcript.jsonl'), [
+    JSON.stringify({ type: 'USER_INPUT', content: 'The user changed setting `Model Selection` from None to Nova Ultra 2. No need to comment.' }),
+    JSON.stringify({ type: 'PLANNER_RESPONSE', input_tokens: 10, output_tokens: 1 }),
+    JSON.stringify({ type: 'PLANNER_RESPONSE', input_tokens: 10, output_tokens: 1 }),
+  ].join('\n'));
+  const res = spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', dir, '--debug-models', '--lang', 'en'], { encoding: 'utf8' });
+  assert.equal(res.status, 0, res.stderr);
+  const row = res.stdout.split('\n').find((l) => l.startsWith('00000072'));
+  assert.equal(row, '00000072\t2\t2\t0\t0\t2\t\tNova Ultra 2 | MODEL_PLACEHOLDER_M26');
+  assert.doesNotMatch(res.stdout, /secret|helpful/);
 });
 
 test('a conversation with a single model labels every call with it, even without matching rows', async () => {
