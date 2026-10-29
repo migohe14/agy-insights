@@ -17,6 +17,7 @@ const field = (tag, data) => {
   const d = Buffer.isBuffer(data) ? data : Buffer.from(data);
   return Buffer.concat([varint((tag << 3) | 2), varint(d.length), d]);
 };
+const number = (tag, n) => Buffer.concat([varint(tag << 3), varint(n)]);
 
 let callId = 0;
 // A tool call, stored as agy does: the model response that requests it, then the step with its result
@@ -31,16 +32,23 @@ function step(tool, args, size) {
 }
 const userStep = (text) => field(1, field(1, text));
 
-/** Writes one conversation database. `steps` are payloads from step() (two steps each) and userStep(). */
-async function writeConversation(dir, id, stepList, model = 'Gemini 3.8 Flash (Medium)') {
+/**
+ * Writes one conversation database. `steps` are payloads from step() (two steps each) and userStep().
+ * `usage`: optional [input, cacheRead, output] per gen_metadata row, stored where agy keeps them (1 › 4).
+ */
+async function writeConversation(dir, id, stepList, model = 'Gemini 3.8 Flash (Medium)', usage = []) {
   const steps = stepList.flat();
   const SQL = await initSqlJs({ locateFile: (f) => path.join(vendor, f) });
   const db = new SQL.Database();
   db.run('create table steps (idx integer primary key, step_type integer, step_payload blob)');
   db.run('create table gen_metadata (idx integer primary key, data blob)');
   steps.forEach((s, i) => db.run('insert into steps values (?, ?, ?)', [i, i ? 21 : 14, s]));
-  // One gen_metadata row per model call; pass an array for a conversation with several calls.
-  [].concat(model).forEach((m, i) => db.run('insert into gen_metadata values (?, ?)', [i, field(1, field(4, m))]));
+  // One gen_metadata row per model call; pass an array for a conversation with several calls. The model's
+  // display name goes in 1 › 21, as agy stores it.
+  [].concat(model).forEach((m, i) => {
+    const u = usage[i] ? [field(4, Buffer.concat([number(2, usage[i][0]), number(3, usage[i][2]), number(5, usage[i][1])]))] : [];
+    db.run('insert into gen_metadata values (?, ?)', [i, field(1, Buffer.concat([...u, field(21, m)]))]);
+  });
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, `${id}.db`), Buffer.from(db.export()));
   db.close();

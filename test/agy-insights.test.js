@@ -289,6 +289,25 @@ test('calls logged without token counts are not counted as 0 tokens', async () =
   assert.match(page, /Very long sessions <span class="tok">204,000 tokens · 100%<\/span>/);
 });
 
+test('takes real usage from gen_metadata when the log has no token counts', async () => {
+  const dir = path.join(tmp, 'meta-usage', 'conversations');
+  const id = '00000042-0000-4000-8000-000000000000';
+  // 3 rows with usage for 2 logged calls without counts (agy can store one more row than calls).
+  await writeConversation(dir, id, [userStep('x')], Array(3).fill('Gemini 3.8 Flash (High)'), [[1000, 0, 100], [3000, 1000, 200], [500, 0, 50]]);
+  const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
+  fs.mkdirSync(logs, { recursive: true });
+  const at = new Date(2026, 9, 2, 12).toISOString();
+  fs.writeFileSync(path.join(logs, 'transcript.jsonl'), Array(2).fill(JSON.stringify({ type: 'PLANNER_RESPONSE', created_at: at, content: 'x' })).join('\n'));
+
+  const r = await analyze({ dir });
+  assert.deepEqual([r.usage.conversations, r.usage.calls, r.usage.input, r.usage.cache, r.usage.output], [1, 3, 4500, 1000, 350]);
+  assert.deepEqual(r.daily.map((d) => [d.day, d.calls]), [['2026-10-02', 3]]);
+  assert.deepEqual([r.models[0].model, r.models[0].known], ['Gemini 3.8 Flash', 3]);
+  // Without a log at all, gen_metadata still gives real usage.
+  fs.rmSync(path.join(dir, '..', 'brain'), { recursive: true });
+  assert.equal((await analyze({ dir })).usage.input, 4500);
+});
+
 test('reports the model and effort level of each call, with its real tokens', async () => {
   const dir = path.join(tmp, 'models', 'conversations');
   const a = '00000030-0000-4000-8000-000000000000', b = '00000031-0000-4000-8000-000000000000';
