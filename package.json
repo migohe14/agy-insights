@@ -28,7 +28,7 @@
     "start": "node agy-insights.js",
     "test": "node --test test/agy-insights.test.js"
   },
-  "author": "Miguel Gonzalez",
+  "author": "Miguel González",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/migohe14/agy-insights.git"
