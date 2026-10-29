@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.9.0`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.9.1`.
 
 **Instalándolo globalmente:**
 
