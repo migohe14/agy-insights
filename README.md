@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights --text
 ```
 
-To pin a version: `npx agy-insights@0.6.0`.
+To pin a version: `npx agy-insights@0.7.0`.
 
 **Globally:**
 
@@ -80,7 +80,7 @@ The report gives two figures:
 
 ## Reading the report
 
-At the top, the period selector and the totals. Then a chart of **token usage per day** (per week when the history spans more than ~4 months), to see how usage evolves; hover a column for its figures, or open "View as table". Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
+At the top, the period selector and the totals. Then a chart of **token usage per day** (per week when the history spans more than ~4 months), to see how usage evolves; hover a column for its figures, or open "View as table". Next, **Models and effort**: calls and real tokens per model and effort level (for example Gemini 3.8 Flash · High), including tokens per call, so you can see what a higher effort costs. Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
 
 | Finding | What it means | What to do |
 |---|---|---|

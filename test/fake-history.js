@@ -39,7 +39,8 @@ async function writeConversation(dir, id, stepList, model = 'Gemini 3.8 Flash (M
   db.run('create table steps (idx integer primary key, step_type integer, step_payload blob)');
   db.run('create table gen_metadata (idx integer primary key, data blob)');
   steps.forEach((s, i) => db.run('insert into steps values (?, ?, ?)', [i, i ? 21 : 14, s]));
-  db.run('insert into gen_metadata values (0, ?)', [field(1, field(4, model))]);
+  // One gen_metadata row per model call; pass an array for a conversation with several calls.
+  [].concat(model).forEach((m, i) => db.run('insert into gen_metadata values (?, ?)', [i, field(1, field(4, m))]));
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, `${id}.db`), Buffer.from(db.export()));
   db.close();

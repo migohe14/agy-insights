@@ -257,3 +257,35 @@ test('the command writes a report with the period presets', () => {
   const page = fs.readFileSync(out, 'utf8');
   for (const label of ['Todo el historial', 'Últimos 90 días', 'Últimos 30 días', 'Últimos 7 días']) assert.ok(page.includes(`>${label}</button>`), label);
 });
+
+test('reports the model and effort level of each call, with its real tokens', async () => {
+  const dir = path.join(tmp, 'models', 'conversations');
+  const a = '00000030-0000-4000-8000-000000000000', b = '00000031-0000-4000-8000-000000000000';
+  await writeConversation(dir, a, [userStep('x')], ['Gemini 3.8 Flash (High)', 'Gemini 3.8 Pro (Low)', 'Gemini 3.8 Flash (High)']);
+  writeTranscript(dir, a, [[1000, 0, 100], [5000, 0, 500], [2000, 0, 200]]);
+  await writeConversation(dir, b, [userStep('x')], 'gemini-3.8-pro-low');
+  const r = await analyze({ dir });
+  const by = (model, effort) => r.models.find((m) => m.model === model && m.effort === effort);
+  assert.deepEqual({ ...by('Gemini 3.8 Flash', 'High'), }, { model: 'Gemini 3.8 Flash', effort: 'High', calls: 2, convs: 1, input: 3000, cache: 0, output: 300, known: 2 });
+  assert.equal(by('Gemini 3.8 Pro', 'Low').input, 5000);
+  assert.equal(by('gemini-3.8-pro', 'low').known, 0);
+  assert.equal(r.sessions.find((s) => s.id === a).model.model, 'Gemini 3.8 Flash');
+  assert.equal(r.sessions.find((s) => s.id === a).models, 2);
+
+  const text = report.text(r, findings(r), {});
+  assert.match(text, /Gemini 3\.8 Flash · High {2}2 calls, 3,300 tokens/);
+  assert.match(text, /conversation 00000030 \(Gemini 3\.8 Flash · High \+1 more\)/);
+  assert.match(report.html(r, findings(r), {}), /<h2>Models and effort<\/h2>/);
+  i18n.setLang('es');
+  try {
+    assert.match(report.text(r, findings(r), {}), /Gemini 3\.8 Pro · Bajo {2}1 llamada/);
+  } finally {
+    i18n.setLang('en');
+  }
+});
+
+test('ignores model names inside longer text, like the system prompt', () => {
+  const { modelOf } = require('../lib/history');
+  assert.deepEqual(modelOf(['Prefer Gemini 3 Pro (High) for hard tasks.', 'gemini-3.8-flash-medium']), { model: 'gemini-3.8-flash', effort: 'medium' });
+  assert.deepEqual(modelOf(['nothing here']), { model: null, effort: null });
+});
