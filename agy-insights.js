@@ -6,7 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
-const { analyze, DEFAULT_DIR } = require('./lib/history');
+const { analyze, DEFAULT_DIRS } = require('./lib/history');
 const { findings, DEFAULTS } = require('./lib/findings');
 const report = require('./lib/report');
 const { buildMap } = require('./lib/map');
@@ -115,7 +115,7 @@ async function main() {
   if (!(argv.includes('--lang') && setLang(argv[argv.indexOf('--lang') + 1]))) setLang(detect());
   const opts = parseArgs(argv);
   if (opts.lang && !setLang(opts.lang)) fail(t.badLang(opts.lang));
-  if (opts.help) return console.log(t.help(DEFAULT_DIR));
+  if (opts.help) return console.log(t.help(DEFAULT_DIRS.join(' + ')));
   const cfg = loadConfig(opts.config);
   if (!opts.lang && cfg.lang && !setLang(cfg.lang)) fail(t.badLang(cfg.lang));
 
@@ -123,7 +123,7 @@ async function main() {
   const since = sinceTime(opts);
   const run = (from) => analyze({
     since: from,
-    dir: opts.dir || cfg.conversationsDir || DEFAULT_DIR,
+    dir: opts.dir || cfg.conversationsDir || DEFAULT_DIRS,
     workspaces: opts.project ? [opts.project] : [],
     customKinds: cfg.customKinds || {},
   });

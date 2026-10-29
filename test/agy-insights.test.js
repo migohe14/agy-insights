@@ -289,6 +289,32 @@ test('calls logged without token counts are not counted as 0 tokens', async () =
   assert.match(page, /Very long sessions <span class="tok">204,000 tokens · 100%<\/span>/);
 });
 
+test('reads the CLI and the editor history together, the first folder naming shared conversations', async () => {
+  const cli = path.join(tmp, 'both', 'antigravity-cli', 'conversations');
+  const ide = path.join(tmp, 'both', 'antigravity', 'conversations');
+  const a = '00000050-0000-4000-8000-000000000000', b = '00000051-0000-4000-8000-000000000000';
+  await writeConversation(cli, a, [userStep('x')]);
+  writeTranscript(cli, a, [[1000, 0, 10]]);
+  await writeConversation(ide, b, [userStep('x')]);
+  writeTranscript(ide, b, [[2000, 0, 20]]);
+  await writeSummaries(cli, { [a]: 'CLI title' });
+  await writeSummaries(ide, { [a]: 'Preview of the CLI one', [b]: 'Editor title' });
+
+  const r = await analyze({ dir: [cli, ide] });
+  assert.deepEqual([r.conversations, r.usage.input], [2, 3000]);
+  assert.deepEqual(r.sessions.map((s) => s.title).sort(), ['CLI title', 'Editor title']);
+  assert.equal(r.dir, `${cli} + ${ide}`);
+  // Each conversation says where it was held, and the report splits usage by origin.
+  assert.deepEqual(r.origins.map((o) => [o.origin, o.conversations, o.input]), [['editor', 1, 2000], ['cli', 1, 1000]]);
+  const page = report.html(r, findings(r), {});
+  assert.match(page, /<h2>By origin<\/h2>/);
+  assert.match(page, /<td class="when">Editor \/ VS Code<\/td>/);
+  assert.match(report.text(r, [], {}), /By origin:\n\s+2,020\s+67%\s+Editor \/ VS Code \(1 conversation\)/);
+  // A single origin shows neither the table nor the column.
+  const one = await analyze({ dir: cli });
+  assert.doesNotMatch(report.html(one, [], {}), /By origin|<th>Origin<\/th>/);
+});
+
 test('takes real usage from gen_metadata when the log has no token counts', async () => {
   const dir = path.join(tmp, 'meta-usage', 'conversations');
   const id = '00000042-0000-4000-8000-000000000000';

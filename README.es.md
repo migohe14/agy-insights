@@ -23,7 +23,7 @@ Cada fichero que lee el agente y cada salida de comando entra en el contexto y s
 ## Requisitos
 
 - **Node.js 20 o superior** (`node --version`).
-- Haber usado **Antigravity CLI** (`agy`) en este equipo. El historial está en `~/.gemini/antigravity-cli/conversations` (en Windows, `%USERPROFILE%\.gemini\antigravity-cli\conversations`).
+- Haber usado **Antigravity** en este equipo: el CLI (`agy`), el editor o la extensión de VS Code. Se leen los dos historiales: el del CLI en `~/.gemini/antigravity-cli/conversations`, y el del editor y la extensión en `~/.gemini/antigravity/conversations` (en Windows, dentro de `%USERPROFILE%\.gemini\`).
 
 ## Instalar
 
@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.8.2`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.9.0`.
 
 **Instalándolo globalmente:**
 
@@ -82,7 +82,7 @@ El informe da dos cifras:
 
 ## Leer el informe
 
-Arriba están el selector de periodo y los totales. Después, una gráfica de **consumo de tokens por día** (por semana si el historial pasa de ~4 meses) para ver la evolución. Cámbiala a **Por llamada** para ver los tokens medios de cada llamada al modelo: el total sube y baja según cuánto hayas trabajado, mientras que por llamada solo baja si cada llamada lleva menos contexto, así que es la que muestra si un cambio ha servido. Pasa el ratón por una columna para ver sus cifras, o abre «Ver como tabla». Después, **Modelos y esfuerzo**: llamadas y tokens reales por modelo y nivel de esfuerzo (por ejemplo Gemini 3.8 Flash · Alto), con los tokens por llamada, para ver cuánto cuesta un esfuerzo mayor. Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
+Arriba están el selector de periodo y los totales. Después, una gráfica de **consumo de tokens por día** (por semana si el historial pasa de ~4 meses) para ver la evolución. Cámbiala a **Por llamada** para ver los tokens medios de cada llamada al modelo: el total sube y baja según cuánto hayas trabajado, mientras que por llamada solo baja si cada llamada lleva menos contexto, así que es la que muestra si un cambio ha servido. Pasa el ratón por una columna para ver sus cifras, o abre «Ver como tabla». Si usas el CLI y también el editor o la extensión de VS Code, **Por origen** reparte las conversaciones y los tokens reales entre ellos (el editor y la extensión comparten historial, así que cuentan juntos), y cada sesión indica desde dónde se tuvo. Después, **Modelos y esfuerzo**: llamadas y tokens reales por modelo y nivel de esfuerzo (por ejemplo Gemini 3.8 Flash · Alto), con los tokens por llamada, para ver cuánto cuesta un esfuerzo mayor. Debajo, **Qué está pasando** reúne los hallazgos; al final, el detalle por proyecto, tipo de fichero, carpeta, fichero, herramienta y comando. El proyecto de cada fichero se detecta por su carpeta `.git`.
 
 | Hallazgo | Qué significa | Qué hacer |
 |---|---|---|

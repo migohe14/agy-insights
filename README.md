@@ -23,7 +23,7 @@ Every file the agent reads and every command output enters the context and is re
 ## Requirements
 
 - **Node.js 20 or later** (`node --version`).
-- Having used **Antigravity CLI** (`agy`) on this machine. The history lives in `~/.gemini/antigravity-cli/conversations` (on Windows, `%USERPROFILE%\.gemini\antigravity-cli\conversations`).
+- Having used **Antigravity** on this machine: the CLI (`agy`), the editor or the VS Code extension. Both histories are read: the CLI's in `~/.gemini/antigravity-cli/conversations`, and the editor's and extension's in `~/.gemini/antigravity/conversations` (on Windows, under `%USERPROFILE%\.gemini\`).
 
 ## Install
 
@@ -36,7 +36,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.8.2`.
+`@latest` makes npx check for the newest version every time. Without it, a copy installed globally (`npm install -g`) or in the current project takes precedence and is never updated. To pin a version instead: `npx agy-insights@0.9.0`.
 
 **Globally:**
 
@@ -82,7 +82,7 @@ The report gives two figures:
 
 ## Reading the report
 
-At the top, the period selector and the totals. Then a chart of **token usage per day** (per week when the history spans more than ~4 months), to see how usage evolves. Switch it to **Per call** to see mean tokens per model call: the total follows how much you worked, while per call drops only when each call carries less context, so it is the one that shows whether a change paid off. Hover a column for its figures, or open "View as table". Next, **Models and effort**: calls and real tokens per model and effort level (for example Gemini 3.8 Flash · High), including tokens per call, so you can see what a higher effort costs. Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
+At the top, the period selector and the totals. Then a chart of **token usage per day** (per week when the history spans more than ~4 months), to see how usage evolves. Switch it to **Per call** to see mean tokens per model call: the total follows how much you worked, while per call drops only when each call carries less context, so it is the one that shows whether a change paid off. Hover a column for its figures, or open "View as table". If you use both the CLI and the editor or the VS Code extension, **By origin** splits conversations and real tokens between them (the editor and the extension share their history, so they count together), and each session shows where it was held. Next, **Models and effort**: calls and real tokens per model and effort level (for example Gemini 3.8 Flash · High), including tokens per call, so you can see what a higher effort costs. Below, **What's happening** lists the findings; at the end, the details by project, file type, folder, file, tool and command. The project of each file is detected through its `.git` folder.
 
 | Finding | What it means | What to do |
 |---|---|---|
