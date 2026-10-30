@@ -22,6 +22,7 @@ function parseArgs(argv) {
     };
     if (a === '--help' || a === '-h') opts.help = true;
     else if (a === '--project') opts.project = absolute(value());
+    else if (a === '--session') opts.session = value();
     else if (a === '--text') opts.text = true;
     else if (a === '--paths') opts.paths = true;
     else if (a === '--map') opts.map = true;
@@ -120,14 +121,17 @@ async function main() {
   if (!opts.lang && cfg.lang && !setLang(cfg.lang)) fail(t.badLang(cfg.lang));
 
   if (opts.map) opts.project = opts.project || process.cwd();
+  if (opts.session !== undefined && !/^[0-9a-f-]{1,36}$/i.test(opts.session)) fail(t.badSession(opts.session));
   const since = sinceTime(opts);
   const run = (from) => analyze({
     since: from,
+    session: opts.session,
     dir: opts.dir || cfg.conversationsDir || DEFAULT_DIRS,
     workspaces: opts.project ? [opts.project] : [],
     customKinds: cfg.customKinds || {},
   });
   const r = await run(since);
+  if (opts.session && !r.conversations) fail(t.noSession(opts.session));
   if (opts.debugModels) return process.stdout.write(debugModels(r));
   if (opts.map) {
     const m = buildMap(opts.project, { ...cfg.map, history: r.files });
@@ -141,7 +145,7 @@ async function main() {
   });
   const found = find(r);
 
-  if (opts.text) return process.stdout.write(report.text(r, found, { scope: opts.project, paths: opts.paths }));
+  if (opts.text) return process.stdout.write(report.text(r, found, { scope: opts.project, paths: opts.paths, session: opts.session }));
 
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   const out = opts.out || path.join(os.tmpdir(), 'agy-insights', `${t.reportName}-${stamp}.html`);

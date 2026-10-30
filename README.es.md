@@ -2,7 +2,7 @@
 
 [English](README.md) · **Español**
 
-Te muestra qué contexto le estás mandando a **Antigravity** de forma repetida o innecesaria, a partir del historial que Antigravity CLI guarda en tu equipo. Tú decides qué hacer con ello.
+Te muestra qué contexto le estás mandando a **Antigravity** de forma repetida o innecesaria, a partir del historial que Antigravity guarda en tu equipo. Tú decides qué hacer con ello.
 
 - Se ejecuta solo en tu máquina y no envía nada a ningún sitio.
 - No cambia nada: te dice qué pegar y dónde, y lo haces tú si quieres.
@@ -14,7 +14,9 @@ npx agy-insights@latest         # informe HTML en el navegador
 npx agy-insights@latest --text  # resumen en la terminal
 ```
 
-Solo necesitas Node.js 20 o superior y haber usado Antigravity CLI (`agy`) en el equipo. La salida sale en español o en inglés según el idioma del sistema; puedes forzarlo con `--lang es` o `--lang en`.
+O, dentro de Antigravity, instálalo como plugin y pregúntale al agente: consulta [Plugin de Antigravity](#plugin-de-antigravity).
+
+Solo necesitas Node.js 20 o superior y haber usado Antigravity (el CLI, el editor o la extensión de VS Code) en el equipo. La salida sale en español o en inglés según el idioma del sistema; puedes forzarlo con `--lang es` o `--lang en`.
 
 ## Por qué
 
@@ -36,7 +38,7 @@ npx agy-insights
 npx agy-insights@latest --text
 ```
 
-`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.9.1`.
+`@latest` hace que npx compruebe cada vez si hay una versión nueva. Sin él, una copia instalada globalmente (`npm install -g`) o en el proyecto actual tiene prioridad y no se actualiza nunca. Para fijar una versión concreta: `npx agy-insights@0.10.0`.
 
 **Instalándolo globalmente:**
 
@@ -47,6 +49,8 @@ agy-insights
 
 Para actualizarlo: `npm install -g agy-insights@latest`.
 
+**Como plugin de Antigravity:** consulta [Plugin de Antigravity](#plugin-de-antigravity).
+
 **Clonando el repositorio:**
 
 ```sh
@@ -54,6 +58,33 @@ git clone https://github.com/migohe14/agy-insights.git
 ```
 
 Y ejecútalo con `node agy-insights/agy-insights.js` en lugar de `npx agy-insights@latest`. Para actualizar: `git pull` dentro de la carpeta.
+
+## Plugin de Antigravity
+
+La misma herramienta, dentro de Antigravity: le preguntas al agente con tus palabras, lanza el análisis y te responde con tus cifras reales.
+
+```sh
+agy plugin install https://github.com/migohe14/agy-insights
+```
+
+O, en Antigravity CLI, `/plugin install https://github.com/migohe14/agy-insights`. Después pregunta, por ejemplo:
+
+- «¿En qué se me van los tokens en este proyecto?»
+- «¿Qué archivos o carpetas debería dejar de leer el agente?»
+- «¿Cuál de mis conversaciones gastó más tokens y por qué?»
+- «Hazme un mapa corto del proyecto para pegar en AGENTS.md»
+
+También puedes invocarlo directamente con `/agy-insights`.
+
+**Qué instala.** Una skill, `agy-insights`. Ni servidores MCP, ni reglas, ni hooks, ni agentes: nada se ejecuta en segundo plano ni se añade a cada petición; la skill solo se carga cuando tu pregunta trata del consumo de tokens o del contexto.
+
+**Qué hace.** La skill ejecuta este mismo comando (`node <plugin>/agy-insights.js --text …`, el código que se publica en npm) y resume su salida. Lee el historial de Antigravity de tu equipo desde una copia temporal, no envía nada a ningún sitio y no necesita red ni cuenta.
+
+**Permiso.** El historial está fuera de tu espacio de trabajo, así que la primera vez Antigravity pide permiso para ejecutar el comando fuera de su sandbox. Para que no vuelva a preguntar, permite `command(regex:node .*agy-insights\.js.*)`.
+
+**Cambios.** El análisis no cambia nada. Si le pides al agente que aplique una exclusión propuesta (una regla `read_file` en `deny`, una línea en `AGENTS.md`), te enseña el cambio exacto y espera tu confirmación antes. Consulta [Excluir algo](#excluir-algo).
+
+**Actualizar o quitar.** Para actualizarlo, instálalo de nuevo (cada versión es la misma que la del paquete de npm); `agy plugin uninstall agy-insights` lo quita.
 
 ## Usar
 
@@ -69,6 +100,7 @@ Analiza todo tu historial (todas las conversaciones que guarde agy, sin límite 
 | Ver el proyecto de la carpeta actual | `npx agy-insights@latest --project .` |
 | Un resumen en la terminal | `npx agy-insights@latest --text` |
 | El resumen con rutas y exclusiones | `npx agy-insights@latest --text --paths` |
+| Por qué una conversación gastó lo que gastó: entrada de cada llamada, cuánto es la base de Antigravity por llamada y cuánto lo que acumuló la conversación, y qué entró en su contexto | `npx agy-insights@latest --text --session e36697b5` (el id que muestra el informe) |
 | Un mapa del proyecto para pegar en `AGENTS.md` (carpetas, ficheros grandes, carpetas generadas; ~20 líneas aunque el repo sea grande) | `npx agy-insights@latest --map --project <carpeta>` |
 | Solo un periodo a medida (el informe ya no tiene selector de periodo) | `npx agy-insights@latest --since 2026-10-01` o `--days 14` |
 | Elegir el idioma (español o inglés) | `npx agy-insights@latest --lang es` |
@@ -136,7 +168,7 @@ Copia `agy-insights.example.json` a `~/.agy-insights.json` (o pásalo con `--con
 | Clave | Para qué sirve | Por defecto |
 |---|---|---|
 | `lang` | Idioma de la salida: `es` o `en` (`--lang` tiene prioridad) | el del sistema |
-| `conversationsDir` | Otra carpeta de historial | la de Antigravity CLI |
+| `conversationsDir` | Otra carpeta de historial | la del CLI y la del editor |
 | `customKinds` | Tipos de fichero propios: `{ "regex": "etiqueta" }` | ninguno |
 | `crossSessionMin` | A partir de cuántas conversaciones avisa de un fichero repetido | 3 |
 | `heavyOutputTokens` | A partir de qué tamaño medio avisa de un comando | 2000 |
@@ -146,7 +178,7 @@ Copia `agy-insights.example.json` a `~/.agy-insights.json` (o pásalo con `--con
 
 - Todo se calcula en tu equipo; no se envía nada.
 - El historial se lee desde una copia temporal y nunca se modifica.
-- No escribe en `~/.gemini`, no instala hooks ni plugins y no toca tu `.gitignore` ni tus proyectos.
+- No escribe en `~/.gemini`, no instala hooks ni plugins y no toca tu `.gitignore` ni tus proyectos. Como plugin, el agente solo cambia un archivo cuando se lo pides y lo confirmas.
 - Lo único que escribe es el informe HTML, en la carpeta temporal o donde digas con `--out`.
 - El informe contiene rutas de tus proyectos. No lo compartas sin revisarlo.
 - **No compartas los ficheros `.db` del historial**: contienen el código que leyó el agente.
@@ -162,7 +194,7 @@ Copia `agy-insights.example.json` a `~/.agy-insights.json` (o pásalo con `--con
 
 **«No se reconoce el formato del historial»**. Probablemente una versión nueva de Antigravity ha cambiado cómo guarda las conversaciones. Ejecuta `npx agy-insights@latest`; si sigue igual, [abre una incidencia](https://github.com/migohe14/agy-insights/issues).
 
-**Uso la app o el IDE de Antigravity, no el CLI**. Por ahora solo se lee el historial del CLI.
+**Uso la app o el IDE de Antigravity, no el CLI**. Se leen los dos historiales. Si no aparecen tus conversaciones, comprueba que existe `~/.gemini/antigravity/conversations`.
 
 **Muchas llamadas con modelo «desconocido»**. agy no anotó su modelo. Ejecuta `npx agy-insights@latest --debug-models` y pega el resultado en una [incidencia](https://github.com/migohe14/agy-insights/issues): solo contiene recuentos y nombres de modelo.
 

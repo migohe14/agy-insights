@@ -555,3 +555,35 @@ test("shows each session's title from agy instead of its id, escaped in the HTML
   assert.ok(page.includes('Fix &lt;b&gt;checkout&lt;/b&gt; totals') && !page.includes('<b>checkout</b>'));
   assert.match(report.text(r, findings(r), {}), /"Fix <b>checkout<\/b> totals" \(00000080\)/);
 });
+
+test('the Antigravity plugin has the npm version and its skill runs the same command', () => {
+  const root = path.join(__dirname, '..');
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, '.antigravity-plugin', 'plugin.json'), 'utf8'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.equal(manifest.name, pkg.name);
+  assert.equal(manifest.version, pkg.version);
+  assert.ok(fs.existsSync(path.join(root, manifest.logo)));
+  const res = spawnSync(process.execPath, [path.join(root, 'skills', 'agy-insights', 'scripts', 'agy-insights.js'), '--dir', history, '--text', '--lang', 'en'], { encoding: 'utf8' });
+  assert.equal(res.status, 0, res.stderr);
+  assert.match(res.stdout, /4 conversations/);
+});
+
+test('--session explains one conversation: its base per call, what it piled up and what entered its context', async () => {
+  const dir = path.join(tmp, 'session', 'conversations');
+  await acmeHistory(dir);
+  writeTranscript(dir, '00000000-0000-4000-8000-000000000000', [[1000, 0, 10], [3000, 0, 10], [5000, 0, 10]]);
+  const cli = (...args) => spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', dir, '--lang', 'en', ...args], { encoding: 'utf8' });
+  const res = cli('--text', '--session', '00000000');
+  assert.equal(res.status, 0, res.stderr);
+  assert.match(res.stdout, /1 conversation/);
+  assert.match(res.stdout, /1,000 → 3,000 → 5,000/);
+  assert.match(res.stdout, /over 3 calls that is 3,000 \(33%\) of the input\. What the conversation piled up and resent: 6,000 \(67%\)/);
+  // Largest first, commands in full, files by name only unless --paths.
+  const contents = res.stdout.split('What entered the context, largest first:')[1].split('\n').slice(1, 4);
+  assert.match(contents[0], /2×  run_command  dotnet test/);
+  assert.match(contents[1], /view_file  Contexto\.g\.cs$/);
+  assert.match(res.stdout, /view_file  PedidosService\.cs  \(1 re-read\)/);
+  assert.match(cli('--text', '--paths', '--session', '00000000').stdout, /view_file  C:\/dev\/Acme Portal\/src\/01-Core\/Domain\/Pedidos\/PedidosService\.cs/);
+  assert.equal(cli('--text', '--session', 'abcdef12').status, 1);
+  assert.equal(cli('--text', '--session', 'not-an-id!').status, 1);
+});

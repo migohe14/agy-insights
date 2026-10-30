@@ -1,0 +1,22 @@
+# Checks a release when a v* tag is pushed. Publishing to npm is done by hand (npm publish); the plugin ships
+# with the push to main. This only makes sure the tag, the npm package and the plugin are the same release.
+name: release-check
+on:
+  push:
+    tags: ['v*']
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(node -p "require('./package.json').version")
+          plugin=$(node -p "require('./.antigravity-plugin/plugin.json').version")
+          [ "$tag" = "$pkg" ] && [ "$tag" = "$plugin" ] || { echo "Tag $tag, package.json $pkg, plugin.json $plugin: they must match"; exit 1; }
+      - run: npm test

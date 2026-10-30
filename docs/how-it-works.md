@@ -97,7 +97,27 @@ node agy-insights.js --dir test/tmp/history
 
 - **Try the package locally**: `npm pack`, then `npx --yes --package=./agy-insights-<version>.tgz agy-insights --help`.
 - **From the repository**, unpublished: `npx --yes github:migohe14/agy-insights`. With no dependencies and no build step, npm installs it straight from git.
-- **Release a version**: `npm version <patch|minor|major>` (updates `package.json` and creates the `v…` tag) and `git push --follow-tags`. The `.github/workflows/publish.yml` workflow runs the tests and `npm publish --provenance`. It needs the `NPM_TOKEN` secret in the GitHub repository (an npm *Automation* or *Granular* token with publish permission).
+- **Release a version**: see [Releasing](#releasing). npm is published by hand; `npm publish` runs the tests first (`prepublishOnly`).
+
+## Antigravity plugin
+
+The repository is also an Antigravity plugin: `.antigravity-plugin/plugin.json` is its manifest, the repository root is the plugin root, and `skills/agy-insights/` is its only component. The skill's `scripts/agy-insights.js` just loads the root `agy-insights.js`, so the plugin always runs the same code as the npm package. `assets/logo.svg` is its logo.
+
+The plugin is installed from GitHub (`agy plugin install https://github.com/migohe14/agy-insights`), not from npm, and agy always takes `main`: it has no way to pin a tag. So **`main` is always the latest release**: work and open pull requests on branches, and don't push unreleased changes to `main`.
+
+## Releasing
+
+npm and the plugin are released together, with the same version:
+
+```sh
+git switch main && git merge <branch>   # the changes to release
+agy plugin validate --strict .          # the plugin must pass with no warnings
+npm version minor                       # or patch / major: bumps package.json and plugin.json, commits, tags v…
+npm publish                             # runs the tests, then publishes to npm
+git push --follow-tags                  # main (the plugin) and the tag
+```
+
+Publish to npm before pushing: if `npm publish` fails, `main` hasn't moved yet and the plugin doesn't get ahead of npm. A test fails if the two versions differ, and on the tag push `.github/workflows/release-check.yml` checks that the tag and both versions match and runs the tests on GitHub.
 
 ## To do
 

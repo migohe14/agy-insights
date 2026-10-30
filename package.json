@@ -1,6 +1,6 @@
 {
   "name": "agy-insights",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Measures Antigravity token usage (CLI, editor and VS Code extension) and shows which context is sent repeatedly or needlessly, in English or Spanish. Run: npx agy-insights@latest",
   "license": "MIT",
   "keywords": [
@@ -30,7 +30,9 @@
   },
   "scripts": {
     "start": "node agy-insights.js",
-    "test": "node --test test/agy-insights.test.js"
+    "test": "node --test test/agy-insights.test.js",
+    "version": "node tools/sync-plugin-version.js && git add .antigravity-plugin/plugin.json",
+    "prepublishOnly": "npm test"
   },
   "author": "Miguel González",
   "repository": {

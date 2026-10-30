@@ -1,0 +1,21 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "agy-insights",
+  "displayName": "agy-insights",
+  "description": "Measures your Antigravity token usage from local history and shows which context is sent repeatedly or needlessly: re-reads, build folders and long outputs.",
+  "version": "0.10.0",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Where is my Antigravity token usage going in this project?",
+    "Which files or folders should the agent stop reading?",
+    "Make a short project map I can paste into AGENTS.md"
+  ],
+  "author": {
+    "name": "Miguel González",
+    "url": "https://github.com/migohe14"
+  },
+  "homepage": "https://github.com/migohe14/agy-insights#readme",
+  "repository": "https://github.com/migohe14/agy-insights",
+  "license": "MIT",
+  "keywords": ["tokens", "context", "token-usage", "optimization", "quota"]
+}
