@@ -59,12 +59,19 @@ async function writeConversation(dir, id, stepList, model = 'Gemini 3.8 Flash (M
  * one JSON line per step. `calls` are [input, cacheRead, output] token counts of each model call;
  * `errors` adds that many failed tool steps.
  */
-function writeTranscript(dir, id, calls, errors = 0) {
+function writeTranscript(dir, id, calls, errors = 0, failures = []) {
   const logs = path.join(dir, '..', 'brain', id, '.system_generated', 'logs');
   fs.mkdirSync(logs, { recursive: true });
   const lines = [{ step_index: 0, source: 'USER', type: 'USER_INPUT', status: 'DONE', content: 'pregunta' }];
   calls.forEach(([input, cache, output]) => lines.push({ step_index: lines.length, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', input_tokens: input, cache_read_tokens: cache, output_tokens: output }));
   for (let i = 0; i < errors; i++) lines.push({ step_index: lines.length, source: 'MODEL', type: 'GENERIC', status: 'ERROR', error: 'file does not exist' });
+  // `failures`: [tool, args, error message]: a model call (1,000 input tokens) requesting that tool, then its
+  // failed step. Arguments are stored JSON-encoded, as agy does.
+  for (const [tool, args, error] of failures) {
+    const encoded = Object.fromEntries(Object.entries(args).map(([k, v]) => [k, JSON.stringify(v)]));
+    lines.push({ step_index: lines.length, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', input_tokens: 1000, cache_read_tokens: 0, output_tokens: 10, tool_calls: [{ name: tool, args: encoded }] });
+    lines.push({ step_index: lines.length, source: 'MODEL', type: 'GENERIC', status: 'ERROR', error });
+  }
   fs.writeFileSync(path.join(logs, 'transcript.jsonl'), lines.map((l) => JSON.stringify(l)).join('\n') + '\n');
 }
 

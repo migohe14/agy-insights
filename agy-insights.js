@@ -123,15 +123,21 @@ async function main() {
   if (opts.map) opts.project = opts.project || process.cwd();
   if (opts.session !== undefined && !/^[0-9a-f-]{1,36}$/i.test(opts.session)) fail(t.badSession(opts.session));
   const since = sinceTime(opts);
+  let sessions = opts.session && [opts.session];
   const run = (from) => analyze({
     since: from,
-    session: opts.session,
+    session: sessions,
     dir: opts.dir || cfg.conversationsDir || DEFAULT_DIRS,
     workspaces: opts.project ? [opts.project] : [],
     customKinds: cfg.customKinds || {},
   });
-  const r = await run(since);
+  let r = await run(since);
   if (opts.session && !r.conversations) fail(t.noSession(opts.session));
+  // --session also takes in the subagents that conversation started, and theirs.
+  for (let more; sessions && (more = r.sessions.flatMap((s) => s.children).filter((c) => !sessions.some((x) => c.startsWith(x.toLowerCase())))).length;) {
+    sessions = [...sessions, ...more];
+    r = await run(since);
+  }
   if (opts.debugModels) return process.stdout.write(debugModels(r));
   if (opts.map) {
     const m = buildMap(opts.project, { ...cfg.map, history: r.files });
@@ -141,6 +147,7 @@ async function main() {
   const find = (x) => findings(x, {
     crossSessionMin: cfg.crossSessionMin ?? DEFAULTS.crossSessionMin,
     heavyOutputTokens: cfg.heavyOutputTokens ?? DEFAULTS.heavyOutputTokens,
+    repeatedFailures: cfg.repeatedFailures ?? DEFAULTS.repeatedFailures,
     longSessionTokens: cfg.longSessionTokens ?? DEFAULTS.longSessionTokens,
   });
   const found = find(r);

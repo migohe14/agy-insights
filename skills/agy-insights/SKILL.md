@@ -19,7 +19,7 @@ node <skill folder>/scripts/agy-insights.js --text --lang en
 - `--lang en` or `--lang es`: always pass the language the user is writing in.
 - `--project <folder>`: only conversations that touched that project. Use the workspace path when the question is about the current project.
 - `--paths`: adds file paths and the exact exclusion rules to propose. Use it when the user wants to know what to exclude; leave it out otherwise.
-- `--session <id>`: only one conversation (the 8-character id the report shows next to its title), with its input per model call, how much of it is Antigravity's base per call versus what the conversation piled up, and what entered its context. Use it when the user asks why a conversation cost so much; you don't need to read the history files yourself.
+- `--session <id>`: only one conversation (the 8-character id the report shows next to its title) and the subagents it started, each with its input per model call, how much of it is Antigravity's base per call versus what it piled up, what entered its context, its failed tool calls and the files it read over and over. Use it when the user asks why a conversation cost so much; you don't need to read the history files yourself.
 - `--days <n>` or `--since <YYYY-MM-DD>`: only a recent period.
 - `--map --project <folder>`: prints a ~20-line project map (folders, large files, generated folders) to paste into `AGENTS.md`.
 - Without `--text`, it writes an HTML report and opens it in the browser. Offer this when the user wants charts or to browse the details.
@@ -33,8 +33,8 @@ The history lives outside the workspace, so Antigravity runs the command outside
 
 The output is meant for you, not to be pasted whole: everything you repeat enters the context again. Summarize it:
 
-1. Real usage (from Antigravity's own logs) and the sessions that use the most. The "~tokens" figures are estimates: use them to compare files, folders and commands, not as usage.
-2. The findings, most costly first, each with its proposed action.
+1. Real usage (from Antigravity's own logs) and the conversations that use the most. A subagent's usage is already included in the conversation that started it, which the report lists with its subagents. The "~tokens" figures are estimates: use them to compare files, folders and commands, not as usage.
+2. The findings, most costly first, each with its proposed action. Give the concrete cause before generic advice: tool calls that keep failing (paths the agent guessed, a denied command, a tool it lacks), a file read over and over (often the main agent polling a subagent's log), a subagent that did most of the work. "Use /compact" or "shorter sessions" only helps when the cost comes from a long session itself.
 3. Offer `--paths` or the HTML report if the user wants the details.
 
 ## Applying a proposal

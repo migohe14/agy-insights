@@ -6,5 +6,6 @@
   },
   "crossSessionMin": 3,
   "heavyOutputTokens": 2000,
-  "longSessionTokens": 100000
+  "longSessionTokens": 100000,
+  "repeatedFailures": 3
 }

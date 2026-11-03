@@ -122,7 +122,9 @@ At the top, the period selector and the totals. Then a chart of **token usage pe
 | Generated, build or dependency files are being read | Reads from `bin/`, `obj/`, `dist/`, `node_modules`, migrations, lockfiles or logs (Antigravity's own files in `~/.gemini`, such as its brain, never count; nor does a `build/` or `bin/` folder that git keeps in the repo, like a webpack config) | If they weren't needed, exclude them (see below) |
 | The same files enter many sessions | A file is read in several different conversations | Normal for core code; if it is large, tell the agent which part to look at |
 | Commands with very long output | The full output of tests or builds enters the context | Ask it to run only the affected test or project |
-| Very long sessions | Everything accumulated is resent on every turn | A new conversation per task |
+| Very long sessions | Everything accumulated is resent on every turn. A subagent's usage counts in the conversation that started it | A new conversation per task |
+| Tool calls that keep failing | The same tool fails the same way again and again (paths that don't exist, a denied command, a tool the agent doesn't have); each failure is one more model call | Depends on the kind: a project map in `AGENTS.md`, allowing the command, or enabling the tool |
+| The agent keeps reading the same file | It re-reads a file to see whether it changed, often a subagent's log | Ask it to wait for the result; the file is never proposed for exclusion |
 
 ## Excluding something
 
@@ -173,6 +175,7 @@ Copy `agy-insights.example.json` to `~/.agy-insights.json` (or pass it with `--c
 | `crossSessionMin` | From how many conversations a repeated file is reported | 3 |
 | `heavyOutputTokens` | From what average size a command is reported | 2000 |
 | `longSessionTokens` | From what size a session is reported as long | 100000 |
+| `repeatedFailures` | From how many identical failures of a tool in a session they are reported | 3 |
 
 ## Privacy
 

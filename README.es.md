@@ -122,7 +122,9 @@ Arriba están el selector de periodo y los totales. Después, una gráfica de **
 | Ficheros generados, compilados o de dependencias | Lecturas de `bin/`, `obj/`, `dist/`, `node_modules`, migraciones, lockfiles o logs (nunca cuentan los ficheros propios de Antigravity en `~/.gemini`, como su brain, ni una carpeta `build/` o `bin/` que git mantiene en el repo, como una configuración de webpack) | Si no hacían falta, exclúyelos (ver abajo) |
 | Los mismos ficheros entran en muchas sesiones | Un fichero se lee en varias conversaciones distintas | Si es código central es normal; si es grande, dile al agente qué parte mirar |
 | Comandos con salidas muy largas | La salida de tests o builds entra entera | Pide ejecutar solo el test o proyecto afectado |
-| Sesiones muy largas | Todo lo acumulado se reenvía en cada turno | Una conversación nueva por tarea |
+| Sesiones muy largas | Todo lo acumulado se reenvía en cada turno. Lo que gasta un subagente cuenta en la conversación que lo lanzó | Una conversación nueva por tarea |
+| Llamadas a herramientas que fallan una y otra vez | La misma herramienta falla igual una y otra vez (rutas que no existen, un comando denegado, una herramienta que el agente no tiene); cada fallo es otra llamada al modelo | Según el tipo: un mapa del proyecto en `AGENTS.md`, permitir el comando o activar la herramienta |
+| El agente lee una y otra vez el mismo fichero | Relee un fichero para ver si ha cambiado, a menudo el registro de un subagente | Pedirle que espere el resultado; nunca se propone excluir el fichero |
 
 ## Excluir algo
 
@@ -173,6 +175,7 @@ Copia `agy-insights.example.json` a `~/.agy-insights.json` (o pásalo con `--con
 | `crossSessionMin` | A partir de cuántas conversaciones avisa de un fichero repetido | 3 |
 | `heavyOutputTokens` | A partir de qué tamaño medio avisa de un comando | 2000 |
 | `longSessionTokens` | A partir de qué tamaño avisa de una sesión larga | 100000 |
+| `repeatedFailures` | A partir de cuántos fallos iguales de una herramienta en una sesión avisa | 3 |
 
 ## Privacidad
 

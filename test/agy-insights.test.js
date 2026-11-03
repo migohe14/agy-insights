@@ -587,3 +587,57 @@ test('--session explains one conversation: its base per call, what it piled up a
   assert.equal(cli('--text', '--session', 'abcdef12').status, 1);
   assert.equal(cli('--text', '--session', 'not-an-id!').status, 1);
 });
+
+test('a subagent counts in the conversation that started it, with its failures and the parent polling its log', async () => {
+  const dir = path.join(tmp, 'subagents', 'conversations');
+  const parent = '00000010-0000-4000-8000-000000000000', child = '00000011-0000-4000-8000-000000000000';
+  const childLog = `C:\\Users\\dev\\.gemini\\antigravity-cli\\brain\\${child}\\.system_generated\\logs\\transcript.jsonl`;
+  await writeConversation(dir, parent, [
+    userStep('review the discount'),
+    step('invoke_subagent', { TypeName: 'research' }, 500),
+    userStep(`Created the following subagent:\n{\n  "conversationId":  "${child}"\n}`),
+    ...Array.from({ length: 6 }, () => step('view_file', { AbsolutePath: childLog }, 4000)),
+  ]);
+  writeTranscript(dir, parent, [[5000, 0, 100], [6000, 0, 100]]);
+  await writeConversation(dir, child, [userStep('read the order code')]);
+  writeTranscript(dir, child, [[3000, 0, 50]], 0, [
+    ['view_file', { AbsolutePath: 'C:\\dev\\Shop\\src\\Orders.cs' }, 'failed to read file: The system cannot find the file specified.'],
+    ['view_file', { AbsolutePath: 'C:\\dev\\Shop\\Orders.cs' }, 'failed to read file: The system cannot find the file specified.'],
+    ['view_file', { AbsolutePath: 'C:\\dev\\Shop\\src\\Domain\\Orders.cs' }, 'failed to read file: The system cannot find the file specified.'],
+    ['run_command', { CommandLine: 'Get-ChildItem -Recurse' }, 'permission check failed: user denied permission to run command'],
+  ]);
+
+  const r = await analyze({ dir });
+  assert.equal(r.conversations, 2);
+  assert.equal(r.threads.length, 1);
+  const [thread] = r.threads;
+  assert.equal(thread.id, parent);
+  assert.deepEqual(thread.subagents.map((s) => s.id), [child]);
+  assert.equal(thread.usage.input, 5000 + 6000 + 3000 + 4 * 1000);
+  // The totals still count every conversation once.
+  assert.equal(r.usage.input, thread.usage.input);
+
+  const found = findings(r);
+  const failures = byId(found, 'failures');
+  assert.equal(failures.items.length, 1);
+  assert.match(failures.items[0].detail, /3× view_file · path not found/);
+  assert.match(failures.items[0].label, /subagent of 00000010/);
+  assert.match(failures.suggestion, /guessing where files are/);
+  const polling = byId(found, 'polling');
+  assert.match(polling.items[0].detail, /6 reads .*a subagent's log/);
+  assert.match(polling.suggestion, /wait for the subagent's reply/);
+  assert.ok(polling.items.every((it) => !it.fixes.length), 'never proposes excluding Antigravity files');
+
+  const cli = (...args) => spawnSync(process.execPath, [path.join(__dirname, '..', 'agy-insights.js'), '--dir', dir, '--lang', 'en', '--text', ...args], { encoding: 'utf8' });
+  const text = cli().stdout;
+  assert.match(text, /1 subagent included \(7,090: 00000011\)/);
+  // Polling is reported once, as polling, not also as re-reads.
+  assert.equal(byId(found, 'rereads'), undefined);
+  assert.match(text, /3× view_file · path not found: \(path hidden, use --paths\)/);
+  assert.match(cli('--paths').stdout, /C:\/dev\/Shop\/src\/Orders\.cs/);
+  // --session on the parent takes in its subagent, with what failed there.
+  const session = cli('--session', '00000010').stdout;
+  assert.match(session, /Inside conversation 00000011 · subagent of 00000010:/);
+  assert.match(session, /1×  run_command · denied: Get-ChildItem -Recurse/);
+  assert.match(session, /6×  transcript\.jsonl  \(a subagent's log\)/);
+});
