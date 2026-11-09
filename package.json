@@ -1,7 +1,7 @@
 {
   "name": "agy-insights",
   "version": "0.11.0",
-  "description": "Measures Antigravity token usage (CLI, editor and VS Code extension) and shows which context is sent repeatedly or needlessly, in English or Spanish. Run: npx agy-insights@latest",
+  "description": "Measures Antigravity token usage (CLI, editor and VS Code extension) and shows which context is sent repeatedly or needlessly. Run: npx agy-insights@latest",
   "license": "MIT",
   "keywords": [
     "antigravity",
@@ -11,8 +11,7 @@
     "context",
     "cli",
     "token-usage",
-    "optimization",
-    "i18n"
+    "optimization"
   ],
   "bin": {
     "agy-insights": "agy-insights.js"
