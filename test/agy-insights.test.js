@@ -76,7 +76,11 @@ test('adds up the real usage from the transcripts, subagents included, and ranks
   const out = report.text(r, findings(r), {});
   assert.match(out, /Real usage: 69,300 tokens .* 282,900 including cache, in 4 model calls/);
   assert.match(out, /\(1 conversation without a log\)/);
-  assert.match(report.html(r, findings(r), {}), /Sessions \(real usage\)/);
+  // The top-5 share is of real usage, like the ranking above it, not of the estimated context.
+  assert.match(out, /The 5 top conversations account for 100% of real usage\./);
+  const page = report.html(r, findings(r), {});
+  assert.match(page, /Sessions \(real usage\)/);
+  assert.match(page, /<b>100%<\/b><span>of real usage, in the 5 top conversations<\/span>/);
 });
 
 test('leaves the history untouched', async () => {
