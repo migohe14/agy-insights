@@ -3,7 +3,7 @@
   "name": "agy-insights",
   "displayName": "agy-insights",
   "description": "Measures your Antigravity token usage from local history and shows which context is sent repeatedly or needlessly: re-reads, build folders and long outputs.",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "logo": "assets/logo.svg",
   "suggestedPrompts": [
     "Where is my Antigravity token usage going in this project?",
